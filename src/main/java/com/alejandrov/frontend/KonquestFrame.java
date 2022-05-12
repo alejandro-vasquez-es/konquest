@@ -12,19 +12,15 @@ import javax.swing.border.Border;
 /**
  * @author aleja
  */
-public class Konquest extends javax.swing.JFrame {
+public class KonquestFrame extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Konquest
-     */
 
     final private int ALTURA_MAIN;
 
-    public Konquest() {
+    public KonquestFrame() {
         initComponents();
         ALTURA_MAIN = Center.getHeight();
-        crearCuadricula();
-        //Messages.setVisible(false);
+        Messages.setVisible(false);
     }
 
     public static void scaleImage(ImageIcon icon, JLabel label) {
@@ -34,12 +30,9 @@ public class Konquest extends javax.swing.JFrame {
         label.setIcon(scaledIcon);
     }
 
-    public void crearCuadricula() {
+    public void crearCuadricula(int filas, int columnas) {
         JPanel cuadricula = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
-
-        int filas = 10;
-        int columnas = 10;
 
         //cuadricula.setMinimumSize(minimumSize);
         Border lineaNegra = BorderFactory.createLineBorder(Color.DARK_GRAY);
@@ -118,15 +111,19 @@ public class Konquest extends javax.swing.JFrame {
         menuAcciones.add(nuevoButton);
 
         terminarJuegoButton.setText("Terminar Juego");
+        terminarJuegoButton.setEnabled(false);
         menuAcciones.add(terminarJuegoButton);
 
         terminarTurno.setText("Terminar turno");
+        terminarTurno.setEnabled(false);
         menuAcciones.add(terminarTurno);
 
         calcularDistanciaButton.setText("Calcular distancia");
+        calcularDistanciaButton.setEnabled(false);
         menuAcciones.add(calcularDistanciaButton);
 
         consultaFlotaButton.setText("Consulta de flota");
+        consultaFlotaButton.setEnabled(false);
         menuAcciones.add(consultaFlotaButton);
 
         North.add(menuAcciones);
@@ -147,6 +144,7 @@ public class Konquest extends javax.swing.JFrame {
         Right.add(jTextField1);
 
         terminarTurnoButton.setText("Terminar turno");
+        terminarTurnoButton.setEnabled(false);
         Right.add(terminarTurnoButton);
 
         menuInstrucciones.add(Right, java.awt.BorderLayout.LINE_END);
@@ -180,8 +178,9 @@ public class Konquest extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void nuevoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nuevoButtonActionPerformed
-        MapaDesign mapaDesign = new MapaDesign();
+        MapaDesignFrame mapaDesign = new MapaDesignFrame(this);
         mapaDesign.setVisible(true);
+        this.setEnabled(false);
     }//GEN-LAST:event_nuevoButtonActionPerformed
 
 
