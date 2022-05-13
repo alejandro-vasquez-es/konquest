@@ -23,5 +23,27 @@ public class Planeta extends JLabel {
         this.produccion = produccion;
     }
 
+    public String getNombre() {
+        return nombre;
+    }
 
+    public int getCantidadNaves() {
+        return cantidadNaves;
+    }
+
+    public Posicion getPosicion() {
+        return posicion;
+    }
+
+    public double getPorcentajeMuerte() {
+        return porcentajeMuerte;
+    }
+
+    public int getProduccion() {
+        return produccion;
+    }
+
+    public ImageIcon getImagen() {
+        return imagen;
+    }
 }

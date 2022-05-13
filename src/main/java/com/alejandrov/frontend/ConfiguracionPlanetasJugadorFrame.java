@@ -7,6 +7,10 @@ package com.alejandrov.frontend;
 import com.alejandrov.backend.MotorJuego;
 import com.alejandrov.backend.jugador.Jugador;
 import com.alejandrov.backend.listas.Lista;
+import com.alejandrov.backend.listas.ListaException;
+import com.alejandrov.frontend.planetas.FilaPlanetaJugador;
+import com.alejandrov.frontend.planetas.Planeta;
+import com.alejandrov.frontend.planetas.PlanetaJugador;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -35,6 +39,8 @@ public class ConfiguracionPlanetasJugadorFrame extends javax.swing.JFrame {
         model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
+                if (column == 6 && row <= jugadores.length - 1)
+                    return false;
                 return column != 0 && column != 7;
             }
 
@@ -52,7 +58,7 @@ public class ConfiguracionPlanetasJugadorFrame extends javax.swing.JFrame {
             @Override
             public void setValueAt(Object aValue, int row, int column) {
                 super.setValueAt(aValue, row, column);
-                fireTableCellUpdated(row,7);
+                fireTableCellUpdated(row, 7);
             }
         };
         initTablaPlanetas();
@@ -85,15 +91,20 @@ public class ConfiguracionPlanetasJugadorFrame extends javax.swing.JFrame {
 
         TableColumn columnaConquistador = tablaPlanetas.getColumnModel().getColumn(6);
         JComboBox comboBoxConquistador = new JComboBox<>();
-        for (int i = 0; i < juego.getJugadores().length; i++) {
-            comboBoxConquistador.addItem(juego.getJugadores()[i].getNombre());
+        for (int i = 0; i < jugadores.length; i++) {
+            comboBoxConquistador.addItem(jugadores[i].getNombre());
         }
         columnaConquistador.setCellEditor(new DefaultCellEditor(comboBoxConquistador));
 
-        for (int i = 0; i < juego.getJugadores().length; i++) {
+        for (int i = 0; i < jugadores.length; i++) {
             String nombre = generarNombre();
-            model.addRow(new Object[]{nombre, 8, 8, 0.4, 5, 5, juego.getJugadores()[i].getNombre(), juego.getJugadores()[i].getColor()});
+            model.addRow(new Object[]{nombre, 8, 8, 0.4, 5, 5, jugadores[i].getNombre(), jugadores[i].getColor()});
         }
+    }
+
+    public void agregarPlaneta() {
+        String nombre = generarNombre();
+        model.addRow(new Object[]{nombre, 8, 8, 0.4, 5, 5, jugadores[0].getNombre(), jugadores[0].getColor()});
     }
 
 //    private void crearPlaneta() {
@@ -120,9 +131,43 @@ public class ConfiguracionPlanetasJugadorFrame extends javax.swing.JFrame {
         return nombre.toUpperCase();
     }
 
+    public void empezarJuego() throws ValidacionesException, ListaException {
+        int totalPlanetas = model.getRowCount();
+        juego.getMapa().reiniciarListaPlanetas();
+        FilaPlanetaJugador[] filaPlanetas = new FilaPlanetaJugador[totalPlanetas];
+        for (int i = 0; i < totalPlanetas; i++) {
+            String nombre = model.getValueAt(i, 0).toString();
+            int cantidadNaves = Integer.parseInt(model.getValueAt(i, 1).toString());
+            int producción = Integer.parseInt(model.getValueAt(i, 2).toString());
+            double porcentajeMuertes =  Double.parseDouble(model.getValueAt(i, 3).toString());
+            int columnaPosicion = Integer.parseInt(model.getValueAt(i, 4).toString());
+            int filaPosicion = Integer.parseInt(model.getValueAt(i, 5).toString());
+            String conquistador = model.getValueAt(i, 6).toString();
+            String tipo = model.getValueAt(i, 7).toString();
+            filaPlanetas[i] = new FilaPlanetaJugador(i, nombre, cantidadNaves, producción, porcentajeMuertes, columnaPosicion, filaPosicion, conquistador, tipo, this, juego.getMapa());
+        }
+        for (FilaPlanetaJugador filaPlanetaJugador :
+                filaPlanetas) {
+            filaPlanetaJugador.validar();
+            PlanetaJugador nuevoPlanetaJugador = new PlanetaJugador(filaPlanetaJugador.getNombre(),filaPlanetaJugador.getCantidadNaves(),filaPlanetaJugador.getPosicion(),filaPlanetaJugador.getPorcentajeMuertes(),filaPlanetaJugador.getProducción(),buscarJugador(filaPlanetaJugador.getNombre()), filaPlanetaJugador.getTipo());
+            juego.getMapa().getPlanetas().agregar(nuevoPlanetaJugador);
+        }
+            System.out.println("si se pudo validar");
+    }
+
+    public Jugador buscarJugador(String nombre) {
+        for (int i = 0; i < juego.getJugadores().length; i++) {
+            if(juego.getJugadores()[i].getNombre().equals(nombre)){
+                return juego.getJugadores()[i];
+            }
+        }
+        return null;
+    }
+
     @Override
     public void dispose() {
         parent.setEnabled(true);
+        ((MapaDesignFrame) parent).reiniciarIndiceColores();
         super.dispose();
     }
 
@@ -139,6 +184,9 @@ public class ConfiguracionPlanetasJugadorFrame extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tablaPlanetas = new javax.swing.JTable();
+        buttons = new javax.swing.JPanel();
+        agregarPlanetaButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("planetas de jugadores");
@@ -157,27 +205,64 @@ public class ConfiguracionPlanetasJugadorFrame extends javax.swing.JFrame {
         jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(15, 15, 15, 15));
         jScrollPane2.setPreferredSize(new java.awt.Dimension(600, 430));
 
-        tablaPlanetas.setBorder(null);
+        tablaPlanetas.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         tablaPlanetas.setModel(new javax.swing.table.DefaultTableModel(
-                new Object[][]{
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
-                },
-                new String[]{
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
         ));
         jScrollPane2.setViewportView(tablaPlanetas);
 
         getContentPane().add(jScrollPane2);
 
+        buttons.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+
+        agregarPlanetaButton.setText("Agregar Planeta");
+        agregarPlanetaButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                agregarPlanetaButtonActionPerformed(evt);
+            }
+        });
+        buttons.add(agregarPlanetaButton);
+
+        jButton1.setText("Empezar Juego");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        buttons.add(jButton1);
+
+        getContentPane().add(buttons);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void agregarPlanetaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarPlanetaButtonActionPerformed
+        agregarPlaneta();
+    }//GEN-LAST:event_agregarPlanetaButtonActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        try {
+            empezarJuego();
+        } catch (ValidacionesException e) {
+            e.printStackTrace();
+        } catch (ListaException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton agregarPlanetaButton;
+    private javax.swing.JPanel buttons;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable tablaPlanetas;

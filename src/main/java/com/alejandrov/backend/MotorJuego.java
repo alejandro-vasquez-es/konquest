@@ -15,16 +15,15 @@ public class MotorJuego {
         flotas = new Lista<Flota>();
     }
 
-    public Jugador buscarJugadorPorNombre(String nombre) {
-        for (Jugador jugador : jugadores) {
-            if (jugador.getNombre() == nombre) {
-                return jugador;
-            }
-        }
-        return null;
-    }
-
     public Jugador[] getJugadores() {
         return jugadores;
+    }
+
+    public Mapa getMapa() {
+        return mapa;
+    }
+
+    public Lista<Flota> getFlotas() {
+        return flotas;
     }
 }

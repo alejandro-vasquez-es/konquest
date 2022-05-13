@@ -39,6 +39,24 @@ public class Lista<T> {
         return false;
     }
 
+    public void eliminarContenido(T contenido) throws ListaException {
+        int indice = obtenerIndice(contenido);
+        eliminarElementoEnIndice(indice);
+    }
+
+    public int obtenerIndice(T contenido) {
+        int indice = 0;
+        Nodo<T> actual = inicio;
+        for (int i = 0; i < longitud; i++) {
+            if (actual.getContenido().equals(contenido))
+                return indice;
+            Nodo<T> siguiente = actual.getSiguiente();
+            actual = siguiente;
+            indice++;
+        }
+        return -1;
+    }
+
     public void eliminarElementoEnIndice(int indice) throws ListaException {
         if (indice >= longitud || indice < 0) {
             throw new ListaException("Indice fuera de rango");

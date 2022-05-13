@@ -14,7 +14,18 @@ public class Posicion {
         return columna;
     }
 
-    public void setFila(int fila) {
-        this.fila = fila;
+    public int getFila() {
+        return fila;
     }
+
+    public boolean esPosicionFueraIndice(Mapa mapa) {
+        return (mapa.getColumnas() < columna || mapa.getFilas() < fila || 0 > columna || 0 > fila);
+    }
+
+    public boolean esPosicionIgual(Posicion posicion) {
+        return (columna == posicion.getColumna() && fila == posicion.getFila());
+    }
+
+
+
 }

@@ -1,10 +1,13 @@
 package com.alejandrov.backend.jugador;
 
-public class Jugador {
+import java.io.Serializable;
+
+public class Jugador implements Serializable {
 
     private String nombre;
     private String tipo;
     private String color;
+
 
     public Jugador(String nombre, String tipo, String color) {
         this.nombre = nombre;

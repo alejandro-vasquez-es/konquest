@@ -11,10 +11,14 @@ import com.alejandrov.backend.enums.TiposJugador;
 import com.alejandrov.backend.enums.TiposMapa;
 import com.alejandrov.backend.jugador.Jugador;
 import com.alejandrov.backend.listas.Lista;
+import com.alejandrov.backend.listas.ListaException;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
 
 /**
  * @author aleja
@@ -23,8 +27,9 @@ public class MapaDesignFrame extends javax.swing.JFrame {
 
     private DefaultTableModel model;
     private JFrame parent;
-    private int cantidadJugadores;
     private int indiceColor;
+    Lista<String> nombres;
+    MotorJuego juego;
 
     public MapaDesignFrame(JFrame parent) {
         this.parent = parent;
@@ -35,18 +40,20 @@ public class MapaDesignFrame extends javax.swing.JFrame {
                 TiposMapa.CIRCINUS.nombre
         };
         tipoComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(tiposDeMapa));
-        model = new DefaultTableModel();
+        reiniciarIndiceColores();
+        nombres = new Lista<String>();
         initTablaJugadores();
-        cantidadJugadores = 2;
-        indiceColor = 0;
     }
 
     public void initTablaJugadores() {
+        model = new DefaultTableModel();
+        nombres = new Lista<String>();
+
         model.addColumn("nombre");
         model.addColumn("tipo");
 
-        model.addRow(new Object[]{"Jugador 1", TiposJugador.HUMANO.valor});
-        model.addRow(new Object[]{"Jugador 2", TiposJugador.IA_FACIL.valor});
+        agregarJugador(TiposJugador.HUMANO.valor);
+        agregarJugador(TiposJugador.IA_FACIL.valor);
 
         tablaJugadores.setModel(model);
 
@@ -60,8 +67,9 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         columnaTipo.setCellEditor(new DefaultCellEditor(comboBox));
     }
 
-    //    private Mapa crearMapa() {
-    private Mapa crearMapa() {
+    // private Mapa crearMapa() {
+    private Mapa crearMapa() throws ValidacionesException {
+        sonOpcionesValidas();
         String nombre = nombreTextField.getText();
         int filas = ((Integer) alturaSpinner.getValue());
         int columnas = ((Integer) anchuraSpinner.getValue());
@@ -74,7 +82,9 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         boolean mostrarNavesNeutrales = mostrarNavesCheckbox.isSelected();
         boolean mostrarEstadisticasPlanetasNeutrales = mostrarEstadísticasCheckbox.isSelected();
         int produccionPlanetasNeutrales = ((Integer) produccionSpinner.getValue());
-        return new Mapa(nombre, filas, columnas, generarAlAzar, esMapaCiego, esAcumulativo, turnosMaximos, tipo, planetasNeutrales, mostrarNavesNeutrales, mostrarEstadisticasPlanetasNeutrales, produccionPlanetasNeutrales);
+        return new Mapa(nombre, filas, columnas, generarAlAzar, esMapaCiego, esAcumulativo, turnosMaximos, tipo,
+                planetasNeutrales, mostrarNavesNeutrales, mostrarEstadisticasPlanetasNeutrales,
+                produccionPlanetasNeutrales);
     }
 
     public Jugador[] crearJugadores() {
@@ -82,23 +92,171 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         Jugador[] jugadores = new Jugador[totalJugadores];
 
         for (int i = 0; i < totalJugadores; i++) {
-            String nombre = tablaJugadores.getValueAt(i,0).toString();
-            String tipo = tablaJugadores.getValueAt(i,1).toString();
+            String nombre = tablaJugadores.getValueAt(i, 0).toString();
+            String tipo = tablaJugadores.getValueAt(i, 1).toString();
 
-            jugadores[i] = new Jugador(nombre, tipo, TipoPlanetas.values()[indiceColor].name().toLowerCase());
+            jugadores[i] = new Jugador(nombre, tipo,TipoPlanetas.values()[indiceColor].name().toLowerCase());
             indiceColor++;
         }
 
         return jugadores;
     }
 
-    public void empezarJuego() {
+    public void agregarJugador(String tipo) {
+        model.addRow(new Object[]{crearNombreJugador(), tipo});
+    }
+
+    public void eliminarJugadorSeleccionado() throws ListaException {
+        if (tablaJugadores.getSelectedRow() != -1) {
+            String jugadorEliminado = tablaJugadores.getValueAt(tablaJugadores.getSelectedRow(), 0).toString();
+            model.removeRow(tablaJugadores.getSelectedRow());
+            nombres.eliminarContenido(jugadorEliminado);
+            JOptionPane.showMessageDialog(this, "Se ha eliminado al jugador");
+        }
+    }
+
+    public void eliminarJugador(int row) throws ListaException {
+            String jugadorEliminado = tablaJugadores.getValueAt(row, 0).toString();
+            model.removeRow(row);
+            nombres.eliminarContenido(jugadorEliminado);
+    }
+
+    public String crearNombreJugador() {
+        int numeroJugador = 1;
+        String nombre = "Jugador " + numeroJugador;
+        while (nombres.incluye(nombre)) {
+            nombre = "Jugador " + numeroJugador;
+            numeroJugador++;
+        }
+        nombres.agregar(nombre);
+        return nombre;
+    }
+
+    private void sonOpcionesValidas() throws ValidacionesException {// validaciones
+
+        // no menos de dos jugadores
+        if (tablaJugadores.getRowCount() < 2) {
+            AñadirButton.requestFocus();
+            throw new ValidacionesException("Debe de haber al menos 2 jugadores", this);
+        }
+
+        // el nombre del mapa no existe
+        if (nombreTextField.getText().equals("")) {
+            nombreTextField.requestFocus();
+            throw new ValidacionesException("El mapa debe tener nombre", this);
+        }
+
+        // dimensiones erroneas
+        if (((Integer) alturaSpinner.getValue()) < 1 || ((Integer) anchuraSpinner.getValue()) < 1) {
+            alturaSpinner.requestFocus();
+            throw new ValidacionesException("El mapa debe tener dimensiones positivas mayores a 1", this);
+        }
+
+        // finalización menor a 1
+        if (((Integer) finalizacionSpinner.getValue()) < 1) {
+            finalizacionSpinner.requestFocus();
+            throw new ValidacionesException("Los turnos máximos (finalización) no pueden ser menor a 1", this);
+        }
+
+        //spinners negativos
+        if (((Integer) planetasNeutralesSpinner.getValue()) < 0 || ((Integer) produccionSpinner.getValue()) < 0) {
+            throw new ValidacionesException("No pueden haber valores negativos ", this);
+        }
+
+        //mas de 8 jugadores
+        if (tablaJugadores.getRowCount() > 8) {
+            throw new ValidacionesException("No pueden haber más de 8 jugadores", this);
+        }
+    }
+
+    public void configurarJuego() throws ValidacionesException {
         Mapa mapa = crearMapa();
         Jugador[] jugadores = crearJugadores();
-        MotorJuego juego = new MotorJuego(jugadores, mapa);
+        juego = new MotorJuego(jugadores, mapa);
+        mapa.setJugadores(jugadores);
         ConfiguracionPlanetasJugadorFrame configPlanetasFrame = new ConfiguracionPlanetasJugadorFrame(this, juego);
+        configPlanetasFrame.setLocationRelativeTo(this);
         configPlanetasFrame.setVisible(true);
         this.setEnabled(false);
+
+    }
+
+    public void reiniciarIndiceColores() {
+        indiceColor = 0;
+    }
+
+    public void guardarArchivoConfiguracion() throws ValidacionesException {
+        Mapa mapa = crearMapa();
+        mapa.setJugadores(crearJugadores());
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setToolTipText("Guardar Archivo");
+        fileChooser.setCurrentDirectory(new File("."));
+
+        int response = fileChooser.showSaveDialog(this);
+
+        if (response == JFileChooser.APPROVE_OPTION) {
+            mapa.guardarArchivo(fileChooser.getSelectedFile().getAbsolutePath());
+            JOptionPane.showMessageDialog(this,"Se ha guardado la configuración correctamente", "Guardado", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    public void abrirArchivoConfiguracion() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setToolTipText("Seleccionar Archivo");
+        fileChooser.setCurrentDirectory(new File("."));
+
+        int response = fileChooser.showOpenDialog(this);
+
+        if (response == JFileChooser.APPROVE_OPTION) {
+            File archivo = new File(fileChooser.getSelectedFile().getAbsolutePath());
+
+            try {
+                FileInputStream fis = new FileInputStream(archivo);
+                ObjectInputStream ois;
+                while (fis.available() > 0) {
+                    ois = new ObjectInputStream(fis);
+                    Mapa mapa = (Mapa) ois.readObject();
+                    nombreTextField.setText(mapa.getNombre());
+                    planetasNeutralesSpinner.setValue(mapa.getPlanetasNeutrales());
+                    anchuraSpinner.setValue(mapa.getColumnas());
+                    alturaSpinner.setValue(mapa.getFilas());
+                    alAzarCheckbox.setSelected(mapa.esAlAzar());
+                    mapaCiegoCheckbox.setSelected(mapa.esMapaCiego());
+                    produccionAcumuladaCheckbox.setSelected(mapa.esAcumulativo());
+                    mostrarNavesCheckbox.setSelected(mapa.seMuestranNavesNeutrales());
+                    mostrarEstadísticasCheckbox.setSelected(mapa.seMuestranEstadisticasPlanetasNeutrales());
+                    produccionSpinner.setValue(mapa.getProduccionPlanetasNeutrales());
+                    finalizacionSpinner.setValue(mapa.getTurnosMaximos());
+                    tipoComboBox.setSelectedItem(mapa.getTipo());
+                    cargarJugadores(mapa.getJugadores());
+                }
+                JOptionPane.showMessageDialog(this,"El archivo se ha cargado correctamente", "Cargado", JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public void cargarJugadores(Jugador[] jugadores) {
+        limpiarTabla();
+        int totalJugadores = jugadores.length;
+        nombres = new Lista<String>();
+
+        for (int i = 0; i < totalJugadores; i++) {
+            String nombre = jugadores[i].getNombre();
+            String tipo = jugadores[i].getTipo();
+            nombres.agregar(nombre);
+
+            model.addRow(new Object[]{nombre, tipo});
+        }
+    }
+
+    public void limpiarTabla(){
+        while(model.getRowCount() > 0) {
+            model.removeRow(0);
+        }
     }
 
     @Override
@@ -113,12 +271,15 @@ public class MapaDesignFrame extends javax.swing.JFrame {
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         header = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
         nombreTextField = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
         Setup = new javax.swing.JPanel();
         jugadores = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -173,8 +334,25 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         jLabel10.setText("Nombre del mapa");
         header.add(jLabel10);
 
-        nombreTextField.setPreferredSize(new java.awt.Dimension(100, 28));
+        nombreTextField.setText("Configuraciones recomendadas");
+        nombreTextField.setPreferredSize(new java.awt.Dimension(200, 28));
         header.add(nombreTextField);
+
+        jButton1.setText("Guardar configuración");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        header.add(jButton1);
+
+        jButton2.setText("Abrir configuración");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        header.add(jButton2);
 
         getContentPane().add(header);
 
@@ -233,6 +411,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         jLabel1.setText("Planetas neutrales:");
         labelAndSpinner.add(jLabel1);
 
+        planetasNeutralesSpinner.setModel(new javax.swing.SpinnerNumberModel(5, 1, null, 1));
         planetasNeutralesSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
         planetasNeutralesSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
         labelAndSpinner.add(planetasNeutralesSpinner);
@@ -244,6 +423,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         jLabel2.setText("Anchura:");
         labelAndSpinner1.add(jLabel2);
 
+        anchuraSpinner.setModel(new javax.swing.SpinnerNumberModel(10, 1, null, 1));
         anchuraSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
         anchuraSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
         labelAndSpinner1.add(anchuraSpinner);
@@ -255,6 +435,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         jLabel3.setText("Altura");
         labelAndSpinner2.add(jLabel3);
 
+        alturaSpinner.setModel(new javax.swing.SpinnerNumberModel(10, 1, null, 1));
         alturaSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
         alturaSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
         labelAndSpinner2.add(alturaSpinner);
@@ -332,6 +513,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         jLabel7.setText("Producción:");
         producción1.add(jLabel7);
 
+        produccionSpinner.setModel(new javax.swing.SpinnerNumberModel(10, 1, null, 1));
         produccionSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
         produccionSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
         producción1.add(produccionSpinner);
@@ -346,6 +528,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         jLabel8.setText("Finalización");
         finalizacion.add(jLabel8);
 
+        finalizacionSpinner.setModel(new javax.swing.SpinnerNumberModel(12, 1, null, 1));
         finalizacionSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
         finalizacionSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
         finalizacion.add(finalizacionSpinner);
@@ -391,26 +574,41 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cancelarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelarButtonActionPerformed
+    private void cancelarButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cancelarButtonActionPerformed
         this.dispose();
-    }//GEN-LAST:event_cancelarButtonActionPerformed
+    }// GEN-LAST:event_cancelarButtonActionPerformed
 
-    private void AñadirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AñadirButtonActionPerformed
-        cantidadJugadores++;
-        model.addRow(new Object[]{"Jugador " + cantidadJugadores, TiposJugador.HUMANO.valor});
-    }//GEN-LAST:event_AñadirButtonActionPerformed
+    private void AñadirButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_AñadirButtonActionPerformed
+        agregarJugador(TiposJugador.HUMANO.valor);
+    }// GEN-LAST:event_AñadirButtonActionPerformed
 
-    private void eliminarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarButtonActionPerformed
-        if (tablaJugadores.getSelectedRow() != -1) {
-            model.removeRow(tablaJugadores.getSelectedRow());
-            JOptionPane.showMessageDialog(this, "Se ha eliminado al jugador");
+    private void eliminarButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_eliminarButtonActionPerformed
+        try {
+            eliminarJugadorSeleccionado();
+        } catch (ListaException e) {
+            e.printStackTrace();
         }
-    }//GEN-LAST:event_eliminarButtonActionPerformed
+    }// GEN-LAST:event_eliminarButtonActionPerformed
 
-    private void aceptarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aceptarButtonActionPerformed
-        empezarJuego();
-    }//GEN-LAST:event_aceptarButtonActionPerformed
+    private void aceptarButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_aceptarButtonActionPerformed
+        try {
+            configurarJuego();
+        } catch (ValidacionesException e) {
+            e.printStackTrace();
+        }
+    }// GEN-LAST:event_aceptarButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
+        try {
+            guardarArchivoConfiguracion();
+        } catch (ValidacionesException e) {
+            System.out.println("Error al guardar");
+        }
+    }// GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton2ActionPerformed
+        abrirArchivoConfiguracion();
+    }// GEN-LAST:event_jButton2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton AñadirButton;
@@ -430,6 +628,8 @@ public class MapaDesignFrame extends javax.swing.JFrame {
     private javax.swing.JPanel finalizacion1;
     private javax.swing.JSpinner finalizacionSpinner;
     private javax.swing.JPanel header;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;

@@ -179,6 +179,7 @@ public class KonquestFrame extends javax.swing.JFrame {
 
     private void nuevoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nuevoButtonActionPerformed
         MapaDesignFrame mapaDesign = new MapaDesignFrame(this);
+        mapaDesign.setLocationRelativeTo(this);
         mapaDesign.setVisible(true);
         this.setEnabled(false);
     }//GEN-LAST:event_nuevoButtonActionPerformed
