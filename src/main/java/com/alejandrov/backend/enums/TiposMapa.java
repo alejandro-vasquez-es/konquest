@@ -1,9 +1,9 @@
 package com.alejandrov.backend.enums;
 
 public enum TiposMapa {
-    VIA_LACTEA("Vía lactea"),
-    ANDROMEDA("Andrómeda"),
-    CIRCINUS("Circinus");
+    VIA_LACTEA("via-lactea"),
+    ANDROMEDA("andromeda"),
+    CIRCINUS("circinus");
 
     final public String nombre;
 

@@ -1,6 +1,8 @@
 package com.alejandrov.backend.listas;
 
-public class Nodo<T> {
+import java.io.Serializable;
+
+public class Nodo<T> implements Serializable {
     private T contenido;
     private Nodo<T> siguiente;
 

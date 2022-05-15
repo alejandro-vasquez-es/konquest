@@ -14,5 +14,12 @@ public class PlanetaJugador extends Planeta{
         super(nombre, cantidadNaves, posicion, porcentajeMuerte, produccion);
         this.jugador = jugador;
         this.tipo = tipo;
+        this.imagen = new ImageIcon(getClass().getResource("/imagenes/planetas/" + tipo.toUpperCase() +".png"));
+//        this.imagen = new ImageIcon("/com/alejandrov/frontend/imagenes/mapa/planetas/" + tipo.toUpperCase() + ".png");
+    }
+
+    @Override
+    public void recibirIncursión() {
+
     }
 }

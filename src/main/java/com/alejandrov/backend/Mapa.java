@@ -3,7 +3,7 @@ package com.alejandrov.backend;
 import com.alejandrov.backend.jugador.Jugador;
 import com.alejandrov.backend.listas.Lista;
 import com.alejandrov.backend.listas.ListaException;
-import com.alejandrov.frontend.planetas.Planeta;
+import com.alejandrov.frontend.planetas.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,14 +20,21 @@ public class Mapa implements Serializable {
     private boolean acumulativo;
     private int turnosMaximos;
     private String tipo;
-    private int planetasNeutrales;
+    private int totalPlanetasNeutrales;
     private Lista<Planeta> planetas;
+    private Lista<PlanetaNeutral> planetasNeutrales;
+    private Lista<PlanetaJugador> planetasJugador;
     private boolean mostrarNavesNeutrales;
     private boolean mostrarEstadisticasPlanetasNeutrales;
     private int ProduccionPlanetasNeutrales;
     private Jugador[] jugadores;
+    private int cantidadPlanetasFantasmas;
+    private int cantidadPlanetasZombie;
+    private int navesAtaqueZombie;
+    private Lista<PlanetaFantasma> planetasFantasma;
+    private Lista<PlanetaZombie> planetasZombie;
 
-    public Mapa(String nombre, int filas, int columnas, boolean alAzar, boolean mapaCiego, boolean acumulativo, int turnosMaximos, String tipo, int planetasNeutrales, boolean mostrarNavesNeutrales, boolean mostrarEstadisticasPlanetasNeutrales, int ProduccionPlanetasNeutrales) {
+    public Mapa(String nombre, int filas, int columnas, boolean alAzar, boolean mapaCiego, boolean acumulativo, int turnosMaximos, String tipo, int totalPlanetasNeutrales, boolean mostrarNavesNeutrales, boolean mostrarEstadisticasPlanetasNeutrales, int ProduccionPlanetasNeutrales, int cantidadPlanetasFantasmas, int cantidadPlanetasZombie, int navesAtaqueZombie) {
         this.nombre = nombre;
         this.filas = filas;
         this.columnas = columnas;
@@ -36,11 +43,18 @@ public class Mapa implements Serializable {
         this.acumulativo = acumulativo;
         this.turnosMaximos = turnosMaximos;
         this.tipo = tipo;
-        this.planetasNeutrales = planetasNeutrales;
+        this.totalPlanetasNeutrales = totalPlanetasNeutrales;
         this.mostrarNavesNeutrales = mostrarNavesNeutrales;
         this.mostrarEstadisticasPlanetasNeutrales = mostrarEstadisticasPlanetasNeutrales;
         this.ProduccionPlanetasNeutrales = ProduccionPlanetasNeutrales;
+        this.cantidadPlanetasFantasmas = cantidadPlanetasFantasmas;
+        this.cantidadPlanetasZombie = cantidadPlanetasZombie;
+        this.navesAtaqueZombie = navesAtaqueZombie;
         this.planetas = new Lista<Planeta>();
+        this.planetasNeutrales = new Lista<PlanetaNeutral>();
+        this.planetasJugador = new Lista<PlanetaJugador>();
+        this.planetasZombie = new Lista<PlanetaZombie>();
+        this.planetasFantasma = new Lista<PlanetaFantasma>();
     }
 
     public void setJugadores(Jugador[] jugadores) {
@@ -84,8 +98,8 @@ public class Mapa implements Serializable {
         return tipo;
     }
 
-    public int getPlanetasNeutrales() {
-        return planetasNeutrales;
+    public int getTotalPlanetasNeutrales() {
+        return totalPlanetasNeutrales;
     }
 
     public Lista<Planeta> getPlanetas() {
@@ -120,6 +134,34 @@ public class Mapa implements Serializable {
         return jugadores;
     }
 
+    public Lista<PlanetaNeutral> getPlanetasNeutrales() {
+        return planetasNeutrales;
+    }
+
+    public Lista<PlanetaJugador> getPlanetasJugador() {
+        return planetasJugador;
+    }
+
+    public int getCantidadPlanetasFantasmas() {
+        return cantidadPlanetasFantasmas;
+    }
+
+    public int getCantidadPlanetasZombie() {
+        return cantidadPlanetasZombie;
+    }
+
+    public Lista<PlanetaFantasma> getPlanetasFantasma() {
+        return planetasFantasma;
+    }
+
+    public Lista<PlanetaZombie> getPlanetasZombie() {
+        return planetasZombie;
+    }
+
+    public int getNavesAtaqueZombie() {
+        return navesAtaqueZombie;
+    }
+
     public void agregarPlaneta(Planeta planeta) {
         planetas.agregar(planeta);
     }
@@ -136,5 +178,9 @@ public class Mapa implements Serializable {
 
     public void reiniciarListaPlanetas() {
         this.planetas = new Lista<Planeta>();
+        this.planetasJugador = new Lista<PlanetaJugador>();
+        this.planetasNeutrales = new Lista<PlanetaNeutral>();
+        this.planetasZombie = new Lista<PlanetaZombie>();
+        this.planetasFantasma = new Lista<PlanetaFantasma>();
     }
 }

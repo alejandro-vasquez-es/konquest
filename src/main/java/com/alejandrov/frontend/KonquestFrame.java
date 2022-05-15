@@ -4,8 +4,12 @@
  */
 package com.alejandrov.frontend;
 
+import com.alejandrov.backend.Mapa;
+import com.alejandrov.backend.listas.Lista;
+import com.alejandrov.frontend.componentes.Cuadro;
+import com.alejandrov.frontend.planetas.Planeta;
+
 import java.awt.*;
-import java.sql.SQLOutput;
 import javax.swing.*;
 import javax.swing.border.Border;
 
@@ -16,50 +20,70 @@ public class KonquestFrame extends javax.swing.JFrame {
 
 
     final private int ALTURA_MAIN;
+    public JPanel cuadricula;
+    public Cuadro[][] cuadros;
 
     public KonquestFrame() {
+
         initComponents();
-        ALTURA_MAIN = Center.getHeight();
+
+        setLocationRelativeTo(null);
+        ALTURA_MAIN = Center.getHeight()-10;
         Messages.setVisible(false);
     }
 
-    public static void scaleImage(ImageIcon icon, JLabel label) {
-        Image img = icon.getImage();
-        Image imgScale = img.getScaledInstance(label.getWidth(), label.getHeight(), Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon = new ImageIcon(imgScale);
-        label.setIcon(scaledIcon);
-    }
-
-    public void crearCuadricula(int filas, int columnas) {
-        JPanel cuadricula = new JPanel(new GridBagLayout());
+    public void crearCuadricula(Mapa mapa) {
+        int columnas = mapa.getColumnas();
+        int filas = mapa.getFilas();
+        cuadricula = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
 
-        //cuadricula.setMinimumSize(minimumSize);
-        Border lineaNegra = BorderFactory.createLineBorder(Color.DARK_GRAY);
+        Border lineaNegra = BorderFactory.createLineBorder(new Color(40, 40, 40, 255),1);
         cuadricula.setBorder(lineaNegra);
-        cuadricula.setBackground(Color.lightGray);
+        cuadricula.setBackground(new Color(156, 156, 156, 180));
 
         int ladoCuadro = (int) Math.floor(ALTURA_MAIN / filas);
+
         cuadricula.setMinimumSize(new Dimension(ladoCuadro * columnas, ladoCuadro * filas));
         cuadricula.setMaximumSize(new Dimension(ladoCuadro * columnas, ladoCuadro * filas));
 
+        cuadros = new Cuadro[columnas][filas];
 
         for (int i = 0; i < columnas; i++) {
             for (int j = 0; j < filas; j++) {
-                JLabel cuadro = new JLabel();
-                System.out.println(ladoCuadro);
+                Cuadro cuadro = new Cuadro();
+                cuadros[i][j] = cuadro;
+
                 cuadro.setPreferredSize(new Dimension(ladoCuadro, ladoCuadro));
                 cuadro.setBorder(lineaNegra);
                 c.fill = GridBagConstraints.BOTH;
-//                c.ipady = ladoCuadro;
                 c.gridx = i;
                 c.gridy = j;
-//                cuadricula.setPreferredSize(new Dimension(ladoCuadro, ladoCuadro));
                 cuadricula.add(cuadro, c);
             }
         }
 
         Center.add(cuadricula);
+    }
+
+    public JPanel getMessages() {
+        return Messages;
+    }
+
+    public JPanel getCenter() {
+        return Center;
+    }
+
+    public Cuadro[][] getCuadros() {
+        return cuadros;
+    }
+
+    public JPanel getCuadricula() {
+        return cuadricula;
+    }
+
+    public void setFondo(ImageIcon icon) {
+        fondoLabel.setIcon(icon);
     }
 
     /**
@@ -87,14 +111,16 @@ public class KonquestFrame extends javax.swing.JFrame {
         Center = new javax.swing.JPanel();
         Messages = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        MensajesList = new javax.swing.JList<>();
+        fondoLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Konquest");
-        setPreferredSize(new java.awt.Dimension(1100, 620));
-        getContentPane().setLayout(new java.awt.BorderLayout(15, 15));
+        setMaximumSize(new java.awt.Dimension(1100, 680));
+        setMinimumSize(new java.awt.Dimension(1100, 680));
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        North.setPreferredSize(new java.awt.Dimension(100, 80));
+        North.setPreferredSize(new java.awt.Dimension(1100, 80));
         North.setLayout(new javax.swing.BoxLayout(North, javax.swing.BoxLayout.Y_AXIS));
 
         menuAcciones.setPreferredSize(new java.awt.Dimension(1100, 38));
@@ -151,15 +177,19 @@ public class KonquestFrame extends javax.swing.JFrame {
 
         North.add(menuInstrucciones);
 
-        getContentPane().add(North, java.awt.BorderLayout.PAGE_START);
+        getContentPane().add(North, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
         Center.setBorder(null);
-        Center.setPreferredSize(new java.awt.Dimension(1100, 200));
-        getContentPane().add(Center, java.awt.BorderLayout.CENTER);
+        Center.setOpaque(false);
+        Center.setPreferredSize(new java.awt.Dimension(1100, 400));
+        getContentPane().add(Center, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 80, -1, -1));
 
         Messages.setBorder(javax.swing.BorderFactory.createTitledBorder("Mensajes"));
+        Messages.setPreferredSize(new java.awt.Dimension(1100, 200));
 
-        jScrollPane1.setViewportView(jList1);
+        MensajesList.setBackground(new java.awt.Color(51, 51, 51));
+        MensajesList.setForeground(new java.awt.Color(199, 199, 199));
+        jScrollPane1.setViewportView(MensajesList);
 
         javax.swing.GroupLayout MessagesLayout = new javax.swing.GroupLayout(Messages);
         Messages.setLayout(MessagesLayout);
@@ -169,10 +199,14 @@ public class KonquestFrame extends javax.swing.JFrame {
         );
         MessagesLayout.setVerticalGroup(
             MessagesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
         );
 
-        getContentPane().add(Messages, java.awt.BorderLayout.PAGE_END);
+        getContentPane().add(Messages, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 480, -1, -1));
+
+        fondoLabel.setOpaque(true);
+        fondoLabel.setPreferredSize(new java.awt.Dimension(1100, 680));
+        getContentPane().add(fondoLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -187,13 +221,14 @@ public class KonquestFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel Center;
+    private javax.swing.JList<String> MensajesList;
     private javax.swing.JPanel Messages;
     private javax.swing.JPanel North;
     private javax.swing.JPanel Right;
     private javax.swing.JButton calcularDistanciaButton;
     private javax.swing.JButton consultaFlotaButton;
+    private javax.swing.JLabel fondoLabel;
     private javax.swing.JLabel instruccionLabel;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JPanel menuAcciones;

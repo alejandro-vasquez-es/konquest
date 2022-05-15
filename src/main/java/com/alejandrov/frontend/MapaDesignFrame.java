@@ -26,12 +26,12 @@ import java.io.ObjectInputStream;
 public class MapaDesignFrame extends javax.swing.JFrame {
 
     private DefaultTableModel model;
-    private JFrame parent;
+    private KonquestFrame parent;
     private int indiceColor;
     Lista<String> nombres;
     MotorJuego juego;
 
-    public MapaDesignFrame(JFrame parent) {
+    public MapaDesignFrame(KonquestFrame parent) {
         this.parent = parent;
         initComponents();
         String[] tiposDeMapa = new String[]{
@@ -82,9 +82,12 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         boolean mostrarNavesNeutrales = mostrarNavesCheckbox.isSelected();
         boolean mostrarEstadisticasPlanetasNeutrales = mostrarEstadísticasCheckbox.isSelected();
         int produccionPlanetasNeutrales = ((Integer) produccionSpinner.getValue());
+        int planetasFantasmas = ((Integer) planetasFantasmasSpinner.getValue());
+        int planetasZombies = ((Integer) planetasZombieSpinner.getValue());
+        int navesAtaqueZombie = ((Integer) navesAtaqueZombieSpinner.getValue());
         return new Mapa(nombre, filas, columnas, generarAlAzar, esMapaCiego, esAcumulativo, turnosMaximos, tipo,
                 planetasNeutrales, mostrarNavesNeutrales, mostrarEstadisticasPlanetasNeutrales,
-                produccionPlanetasNeutrales);
+                produccionPlanetasNeutrales, planetasFantasmas,planetasZombies, navesAtaqueZombie);
     }
 
     public Jugador[] crearJugadores() {
@@ -174,7 +177,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         Jugador[] jugadores = crearJugadores();
         juego = new MotorJuego(jugadores, mapa);
         mapa.setJugadores(jugadores);
-        ConfiguracionPlanetasJugadorFrame configPlanetasFrame = new ConfiguracionPlanetasJugadorFrame(this, juego);
+        ConfiguracionPlanetasJugadorFrame configPlanetasFrame = new ConfiguracionPlanetasJugadorFrame(this, juego, parent);
         configPlanetasFrame.setLocationRelativeTo(this);
         configPlanetasFrame.setVisible(true);
         this.setEnabled(false);
@@ -217,7 +220,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
                     ois = new ObjectInputStream(fis);
                     Mapa mapa = (Mapa) ois.readObject();
                     nombreTextField.setText(mapa.getNombre());
-                    planetasNeutralesSpinner.setValue(mapa.getPlanetasNeutrales());
+                    planetasNeutralesSpinner.setValue(mapa.getTotalPlanetasNeutrales());
                     anchuraSpinner.setValue(mapa.getColumnas());
                     alturaSpinner.setValue(mapa.getFilas());
                     alAzarCheckbox.setSelected(mapa.esAlAzar());
@@ -259,6 +262,10 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         }
     }
 
+    public JFrame getKonquest(){
+        return parent;
+    }
+
     @Override
     public void dispose() {
         parent.setEnabled(true);
@@ -287,26 +294,27 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         buttons = new javax.swing.JPanel();
         AñadirButton = new javax.swing.JButton();
         eliminarButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
         Mapa = new javax.swing.JPanel();
         labelAndSpinner = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         planetasNeutralesSpinner = new javax.swing.JSpinner();
+        labelAndSpinner3 = new javax.swing.JPanel();
+        jLabel11 = new javax.swing.JLabel();
+        planetasFantasmasSpinner = new javax.swing.JSpinner();
         labelAndSpinner1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         anchuraSpinner = new javax.swing.JSpinner();
         labelAndSpinner2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         alturaSpinner = new javax.swing.JSpinner();
-        jSeparator1 = new javax.swing.JSeparator();
-        dueño = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        porcentajeMuerte = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        planetasNeutralesSpinner1 = new javax.swing.JSpinner();
-        producción = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
-        planetasNeutralesSpinner2 = new javax.swing.JSpinner();
+        zombie = new javax.swing.JPanel();
+        labelAndSpinner4 = new javax.swing.JPanel();
+        jLabel12 = new javax.swing.JLabel();
+        planetasZombieSpinner = new javax.swing.JSpinner();
+        labelAndSpinner5 = new javax.swing.JPanel();
+        jLabel13 = new javax.swing.JLabel();
+        navesAtaqueZombieSpinner = new javax.swing.JSpinner();
         alAzarCheckbox = new javax.swing.JCheckBox();
         Opciones = new javax.swing.JPanel();
         mapaCiegoCheckbox = new javax.swing.JCheckBox();
@@ -357,10 +365,9 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         getContentPane().add(header);
 
         Setup.setPreferredSize(new java.awt.Dimension(366, 360));
-        Setup.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 22, 20));
 
         jugadores.setBorder(javax.swing.BorderFactory.createTitledBorder("Jugadores"));
-        jugadores.setPreferredSize(new java.awt.Dimension(200, 320));
+        jugadores.setPreferredSize(new java.awt.Dimension(200, 360));
         jugadores.setLayout(new javax.swing.BoxLayout(jugadores, javax.swing.BoxLayout.Y_AXIS));
 
         jScrollPane2.setPreferredSize(new java.awt.Dimension(180, 280));
@@ -400,10 +407,14 @@ public class MapaDesignFrame extends javax.swing.JFrame {
 
         jugadores.add(buttons);
 
-        Setup.add(jugadores);
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createTitledBorder("Mapa"));
+        jScrollPane1.setMaximumSize(new java.awt.Dimension(200, 360));
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(200, 360));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(200, 360));
 
-        Mapa.setBorder(javax.swing.BorderFactory.createTitledBorder("Mapa"));
-        Mapa.setPreferredSize(new java.awt.Dimension(200, 320));
+        Mapa.setBorder(null);
+        Mapa.setMinimumSize(new java.awt.Dimension(200, 400));
+        Mapa.setPreferredSize(new java.awt.Dimension(200, 400));
         Mapa.setLayout(new javax.swing.BoxLayout(Mapa, javax.swing.BoxLayout.Y_AXIS));
 
         labelAndSpinner.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
@@ -411,12 +422,24 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         jLabel1.setText("Planetas neutrales:");
         labelAndSpinner.add(jLabel1);
 
-        planetasNeutralesSpinner.setModel(new javax.swing.SpinnerNumberModel(5, 1, null, 1));
+        planetasNeutralesSpinner.setModel(new javax.swing.SpinnerNumberModel(5, 0, null, 1));
         planetasNeutralesSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
         planetasNeutralesSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
         labelAndSpinner.add(planetasNeutralesSpinner);
 
         Mapa.add(labelAndSpinner);
+
+        labelAndSpinner3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        jLabel11.setText("Planetas fantasmas");
+        labelAndSpinner3.add(jLabel11);
+
+        planetasFantasmasSpinner.setModel(new javax.swing.SpinnerNumberModel(3, 0, null, 1));
+        planetasFantasmasSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
+        planetasFantasmasSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
+        labelAndSpinner3.add(planetasFantasmasSpinner);
+
+        Mapa.add(labelAndSpinner3);
 
         labelAndSpinner1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
@@ -441,55 +464,48 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         labelAndSpinner2.add(alturaSpinner);
 
         Mapa.add(labelAndSpinner2);
-        Mapa.add(jSeparator1);
 
-        dueño.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        zombie.setBorder(javax.swing.BorderFactory.createTitledBorder("Zombie"));
+        zombie.setPreferredSize(new java.awt.Dimension(190, 142));
+        zombie.setLayout(new javax.swing.BoxLayout(zombie, javax.swing.BoxLayout.Y_AXIS));
 
-        jLabel4.setText("Dueño:");
-        dueño.add(jLabel4);
+        labelAndSpinner4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        jTextField1.setText("Disponible");
-        jTextField1.setEnabled(false);
-        jTextField1.setPreferredSize(new java.awt.Dimension(100, 28));
-        dueño.add(jTextField1);
+        jLabel12.setText("Planetas");
+        labelAndSpinner4.add(jLabel12);
 
-        Mapa.add(dueño);
+        planetasZombieSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 0, null, 1));
+        planetasZombieSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
+        planetasZombieSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
+        labelAndSpinner4.add(planetasZombieSpinner);
 
-        porcentajeMuerte.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        zombie.add(labelAndSpinner4);
 
-        jLabel5.setText("Pocentaje muertes:");
-        porcentajeMuerte.add(jLabel5);
+        labelAndSpinner5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        planetasNeutralesSpinner1.setEnabled(false);
-        planetasNeutralesSpinner1.setMinimumSize(new java.awt.Dimension(40, 40));
-        planetasNeutralesSpinner1.setPreferredSize(new java.awt.Dimension(40, 28));
-        planetasNeutralesSpinner1.setValue(0.4);
-        porcentajeMuerte.add(planetasNeutralesSpinner1);
+        jLabel13.setText("Naves por ataque");
+        labelAndSpinner5.add(jLabel13);
 
-        Mapa.add(porcentajeMuerte);
+        navesAtaqueZombieSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 0, null, 1));
+        navesAtaqueZombieSpinner.setMinimumSize(new java.awt.Dimension(40, 40));
+        navesAtaqueZombieSpinner.setPreferredSize(new java.awt.Dimension(50, 28));
+        labelAndSpinner5.add(navesAtaqueZombieSpinner);
 
-        producción.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        zombie.add(labelAndSpinner5);
 
-        jLabel6.setText("Producción:");
-        producción.add(jLabel6);
+        Mapa.add(zombie);
 
-        planetasNeutralesSpinner2.setEnabled(false);
-        planetasNeutralesSpinner2.setMinimumSize(new java.awt.Dimension(40, 40));
-        planetasNeutralesSpinner2.setPreferredSize(new java.awt.Dimension(50, 28));
-        planetasNeutralesSpinner2.setValue(10);
-        producción.add(planetasNeutralesSpinner2);
-
-        Mapa.add(producción);
-
+        alAzarCheckbox.setSelected(true);
         alAzarCheckbox.setText("Al Azar");
+        alAzarCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 15, 1));
         alAzarCheckbox.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         alAzarCheckbox.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
         Mapa.add(alAzarCheckbox);
 
-        Setup.add(Mapa);
+        jScrollPane1.setViewportView(Mapa);
 
         Opciones.setBorder(javax.swing.BorderFactory.createTitledBorder("Opciones"));
-        Opciones.setPreferredSize(new java.awt.Dimension(200, 320));
+        Opciones.setPreferredSize(new java.awt.Dimension(200, 360));
         Opciones.setLayout(new javax.swing.BoxLayout(Opciones, javax.swing.BoxLayout.Y_AXIS));
 
         mapaCiegoCheckbox.setText("Mapa ciego");
@@ -546,7 +562,32 @@ public class MapaDesignFrame extends javax.swing.JFrame {
 
         Opciones.add(finalizacion1);
 
-        Setup.add(Opciones);
+        javax.swing.GroupLayout SetupLayout = new javax.swing.GroupLayout(Setup);
+        Setup.setLayout(SetupLayout);
+        SetupLayout.setHorizontalGroup(
+            SetupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(SetupLayout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addComponent(jugadores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        SetupLayout.setVerticalGroup(
+            SetupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(SetupLayout.createSequentialGroup()
+                .addGroup(SetupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(SetupLayout.createSequentialGroup()
+                        .addGap(8, 8, 8)
+                        .addGroup(SetupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jugadores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Opciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(SetupLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(12, Short.MAX_VALUE))
+        );
 
         getContentPane().add(Setup);
 
@@ -622,7 +663,6 @@ public class MapaDesignFrame extends javax.swing.JFrame {
     private javax.swing.JSpinner anchuraSpinner;
     private javax.swing.JPanel buttons;
     private javax.swing.JButton cancelarButton;
-    private javax.swing.JPanel dueño;
     private javax.swing.JButton eliminarButton;
     private javax.swing.JPanel finalizacion;
     private javax.swing.JPanel finalizacion1;
@@ -632,35 +672,37 @@ public class MapaDesignFrame extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JPanel jugadores;
     private javax.swing.JPanel labelAndSpinner;
     private javax.swing.JPanel labelAndSpinner1;
     private javax.swing.JPanel labelAndSpinner2;
+    private javax.swing.JPanel labelAndSpinner3;
+    private javax.swing.JPanel labelAndSpinner4;
+    private javax.swing.JPanel labelAndSpinner5;
     private javax.swing.JCheckBox mapaCiegoCheckbox;
     private javax.swing.JCheckBox mostrarEstadísticasCheckbox;
     private javax.swing.JCheckBox mostrarNavesCheckbox;
+    private javax.swing.JSpinner navesAtaqueZombieSpinner;
     private javax.swing.JPanel neutrales;
     private javax.swing.JTextField nombreTextField;
+    private javax.swing.JSpinner planetasFantasmasSpinner;
     private javax.swing.JSpinner planetasNeutralesSpinner;
-    private javax.swing.JSpinner planetasNeutralesSpinner1;
-    private javax.swing.JSpinner planetasNeutralesSpinner2;
-    private javax.swing.JPanel porcentajeMuerte;
+    private javax.swing.JSpinner planetasZombieSpinner;
     private javax.swing.JCheckBox produccionAcumuladaCheckbox;
     private javax.swing.JSpinner produccionSpinner;
-    private javax.swing.JPanel producción;
     private javax.swing.JPanel producción1;
     private javax.swing.JTable tablaJugadores;
     private javax.swing.JComboBox<String> tipoComboBox;
+    private javax.swing.JPanel zombie;
     // End of variables declaration//GEN-END:variables
 }
