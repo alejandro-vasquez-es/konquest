@@ -183,4 +183,18 @@ public class Mapa implements Serializable {
         this.planetasZombie = new Lista<PlanetaZombie>();
         this.planetasFantasma = new Lista<PlanetaFantasma>();
     }
+
+    public static int medirDistancia(Posicion pos1, Posicion pos2) {
+        int columna1 = pos1.getColumna();
+        int fila1 = pos1.getFila();
+        int columna2 = pos2.getColumna();
+        int fila2 = pos2.getFila();
+
+        int distanciaX = columna1 - columna2;
+        int distanciaY = fila1 - fila2;
+
+        double distancia = Math.sqrt(Math.pow(distanciaX,2) + Math.pow(distanciaY,2));
+        return (int) Math.round(distancia);
+
+    }
 }

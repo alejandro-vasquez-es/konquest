@@ -29,8 +29,6 @@ public abstract class Planeta {
         super();
     }
 
-
-
     public String getNombre() {
         return nombre;
     }
@@ -80,6 +78,14 @@ public abstract class Planeta {
         }
 
         return pos;
+    }
+
+    public void enviarNaves(int navesEnviadas) {
+        this.cantidadNaves -= navesEnviadas;
+    }
+
+    public void regresarNaves(int navesRegresadas) {
+        cantidadNaves += navesRegresadas;
     }
 
 }

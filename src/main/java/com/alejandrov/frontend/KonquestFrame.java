@@ -5,9 +5,12 @@
 package com.alejandrov.frontend;
 
 import com.alejandrov.backend.Mapa;
+import com.alejandrov.backend.MotorJuego;
+import com.alejandrov.backend.Posicion;
 import com.alejandrov.backend.listas.Lista;
+import com.alejandrov.backend.listas.ListaException;
 import com.alejandrov.frontend.componentes.Cuadro;
-import com.alejandrov.frontend.planetas.Planeta;
+import com.alejandrov.frontend.planetas.*;
 
 import java.awt.*;
 import javax.swing.*;
@@ -18,29 +21,36 @@ import javax.swing.border.Border;
  */
 public class KonquestFrame extends javax.swing.JFrame {
 
-
     final private int ALTURA_MAIN;
-    public JPanel cuadricula;
-    public Cuadro[][] cuadros;
+    private JPanel cuadricula;
+    private Cuadro[][] cuadros;
+    private Cuadro[] cuadrosClickeados;
+    private int indiceCuadrosClickeados;
+    private MotorJuego juego;
+    private DefaultListModel<String> model;
 
     public KonquestFrame() {
 
         initComponents();
 
         setLocationRelativeTo(null);
-        ALTURA_MAIN = Center.getHeight()-10;
+        ALTURA_MAIN = Center.getHeight() - 10;
         Messages.setVisible(false);
+        cuadrosClickeados = new Cuadro[2];
+        indiceCuadrosClickeados = 0;
+
     }
 
-    public void crearCuadricula(Mapa mapa) {
+    public void crearCuadricula(MotorJuego juego) {
+        Mapa mapa = juego.getMapa();
         int columnas = mapa.getColumnas();
         int filas = mapa.getFilas();
         cuadricula = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
 
-        Border lineaNegra = BorderFactory.createLineBorder(new Color(40, 40, 40, 255),1);
+        Border lineaNegra = Cuadro.LINEA_NEGRA;
         cuadricula.setBorder(lineaNegra);
-        cuadricula.setBackground(new Color(156, 156, 156, 180));
+        cuadricula.setBackground(new Color(156, 156, 156));
 
         int ladoCuadro = (int) Math.floor(ALTURA_MAIN / filas);
 
@@ -51,7 +61,7 @@ public class KonquestFrame extends javax.swing.JFrame {
 
         for (int i = 0; i < columnas; i++) {
             for (int j = 0; j < filas; j++) {
-                Cuadro cuadro = new Cuadro();
+                Cuadro cuadro = new Cuadro(juego);
                 cuadros[i][j] = cuadro;
 
                 cuadro.setPreferredSize(new Dimension(ladoCuadro, ladoCuadro));
@@ -66,6 +76,183 @@ public class KonquestFrame extends javax.swing.JFrame {
         Center.add(cuadricula);
     }
 
+    public void setinstruccionLabel() {
+        instruccionLabel.setText("  Turno del jugador \"" + juego.getJugadorActivo().getNombre() + "\", seleccione el planeta de origen");
+    }
+
+    public void deseleccionarCuadros() {
+        for (int i = 0; i < 2; i++) {
+            if (cuadrosClickeados[i] != null) {
+                cuadrosClickeados[i].deselccionar();
+                cuadrosClickeados[i] = null;
+                indiceCuadrosClickeados = 0;
+            }
+        }
+    }
+
+    public void terminarTurnoJugador() {
+        juego.setSiguienteJugadorActivo();
+        setinstruccionLabel();
+        try {
+            setToolTips();
+        } catch (ListaException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void prepararFrame(final MotorJuego juego) throws ListaException {
+        this.juego = juego;
+        getMessages().setVisible(true);
+        getCenter().removeAll();
+        getCenter().revalidate();
+        getCenter().repaint();
+        ImageIcon imagen = new ImageIcon(getClass().getResource("/imagenes/mapa/" + juego.getMapa().getTipo() + ".jpg"));
+        setFondo(imagen);
+        crearCuadricula(juego);
+        JButton deseleccionarButton = new JButton("Deseleccionar");
+        deseleccionarButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deseleccionarCuadros();
+            }
+        });
+        Center.add(deseleccionarButton);
+        setToolTips();
+        iniciarAreaMensajes();
+        terminarJuegoButton.setEnabled(true);
+        terminarTurnoButton.setEnabled(true);
+        calcularDistanciaButton.setEnabled(true);
+        consultaFlotaButton.setEnabled(true);
+        mandarNavesButton.setEnabled(true);
+        navesTextField.setEnabled(true);
+        setinstruccionLabel();
+    }
+
+    public void iniciarAreaMensajes() {
+        model = new DefaultListModel<String>();
+        areaMensajes.setModel(model);
+        actualizarAreaMensajes();
+    }
+
+    public void actualizarAreaMensajes() {
+        model.addElement("Turno" + juego.getTurno());
+        String guiones = "";
+        for (int i = 0; i < 270; i++) {
+            guiones += "-";
+        }
+        model.addElement(guiones);
+    }
+
+    public void setToolTips() throws ListaException {
+        setToolTipsPlanetasJugador();
+        setToolTipsPlanetasNeutrales();
+        setToolTipsPlanetasFantasmas();
+        setToolTipsPlanetasZombies();
+    }
+
+    public void setToolTipsPlanetasNeutrales() throws ListaException {
+        Lista<PlanetaNeutral> planetas = juego.getMapa().getPlanetasNeutrales();
+        for (int i = 0; i < planetas.obtenerLongitud(); i++) {
+            PlanetaNeutral planeta = planetas.obtenerContenido(i);
+            Posicion pos = planeta.getPosicion();
+            String tooltip = planeta.toString(new boolean[]{juego.getMapa().seMuestranNavesNeutrales(), juego.getMapa().seMuestranEstadisticasPlanetasNeutrales()});
+            cuadros[pos.getColumna()][pos.getFila()].setToolTipText(tooltip);
+        }
+    }
+
+    public void setToolTipsPlanetasZombies() throws ListaException {
+        Lista<PlanetaZombie> planetas = juego.getMapa().getPlanetasZombie();
+        for (int i = 0; i < planetas.obtenerLongitud(); i++) {
+            PlanetaZombie planeta = planetas.obtenerContenido(i);
+            Posicion pos = planeta.getPosicion();
+            String tooltip = "Planeta Zombie";
+            cuadros[pos.getColumna()][pos.getFila()].setToolTipText(tooltip);
+        }
+    }
+
+    public void setToolTipsPlanetasFantasmas() throws ListaException {
+        Lista<PlanetaFantasma> planetas = juego.getMapa().getPlanetasFantasma();
+        for (int i = 0; i < planetas.obtenerLongitud(); i++) {
+            PlanetaFantasma planeta = planetas.obtenerContenido(i);
+            Posicion pos = planeta.getPosicion();
+            String tooltip = planeta.toString(new boolean[]{juego.getMapa().seMuestranNavesNeutrales(), juego.getMapa().seMuestranEstadisticasPlanetasNeutrales()});
+            cuadros[pos.getColumna()][pos.getFila()].setToolTipText(tooltip);
+        }
+    }
+
+    ;
+
+    public void setToolTipsPlanetasJugador() throws ListaException {
+        Lista<PlanetaJugador> planetas = juego.getMapa().getPlanetasJugador();
+        for (int i = 0; i < planetas.obtenerLongitud(); i++) {
+            PlanetaJugador planeta = planetas.obtenerContenido(i);
+            Posicion pos = planeta.getPosicion();
+            boolean esCiego = juego.getMapa().esMapaCiego();
+            if (((PlanetaJugador) planeta).getJugador().equals(juego.getJugadorActivo())) {
+                esCiego = false;
+            }
+            String tooltip = planeta.toString(esCiego);
+            cuadros[pos.getColumna()][pos.getFila()].setToolTipText(tooltip);
+        }
+    }
+
+    public void calcularDistancia() {
+        if (hayCuadrosSeleccionados()) {
+            int distancia = Mapa.medirDistancia(cuadrosClickeados[0].getPlaneta().getPosicion(), cuadrosClickeados[1].getPlaneta().getPosicion());
+            JOptionPane.showMessageDialog(this, "La distancia entre ambos planetas es de: " + distancia + " años luz", "Distancia entre planetas", JOptionPane.INFORMATION_MESSAGE);
+
+        } else {
+            JOptionPane.showMessageDialog(this, "Por favor selecciona dos planetas para realizar la medición", "Selección de planetas", JOptionPane.WARNING_MESSAGE);
+
+        }
+    }
+
+
+    public boolean hayCuadrosSeleccionados() {
+        return cuadrosClickeados[0] != null && cuadrosClickeados[1] != null;
+    }
+
+    public void consultarFlota() {
+        FlotasFrame flotasFrame = new FlotasFrame(juego.getJugadorActivo().getFlotas(),juego.getTurno(),juego.getJugadorActivo(),this);
+        flotasFrame.setLocationRelativeTo(this);
+        flotasFrame.setVisible(true);
+    }
+
+    private void enviarNaves() throws ValidacionesException, ListaException {
+        validacioneEnviarNaves();
+        int naves = Integer.parseInt(navesTextField.getText());
+        juego.nuevaFlota(cuadrosClickeados, naves);
+        setToolTips();
+        JOptionPane.showMessageDialog(this, "El envío de naves se realizó exitósamente, puedes visualizar más información en el botón de \"Consulta de Flota\"");
+        navesTextField.setText("");
+        deseleccionarCuadros();
+    }
+
+    public void validacioneEnviarNaves() throws ValidacionesException {
+        //cuadros seleccionados
+        if (!hayCuadrosSeleccionados()) {
+            throw new ValidacionesException("Por favor selecciona dos planetas para enviar naves", this);
+        }
+
+        //no hay naves escritas
+        if (navesTextField.getText().equals("")) {
+            throw new ValidacionesException("Por favor escribe cuántas naves quieres mandar", this);
+        }
+
+        //el planeta no tiene naves suficientes
+        if (Integer.parseInt(navesTextField.getText()) > cuadrosClickeados[0].getPlaneta().getCantidadNaves()) {
+            navesTextField.setText("");
+            navesTextField.requestFocus();
+            throw new ValidacionesException("El planeta seleccionado no tiene las naves suficientes", this);
+        }
+
+        // no se pueden conquistar planetas zombies
+        if(cuadrosClickeados[1].getPlaneta() instanceof PlanetaZombie){
+            deseleccionarCuadros();
+            navesTextField.setText("");
+            throw new ValidacionesException("No se pueden conquistar planetas zombies", this);
+        }
+    }
+
     public JPanel getMessages() {
         return Messages;
     }
@@ -78,12 +265,23 @@ public class KonquestFrame extends javax.swing.JFrame {
         return cuadros;
     }
 
-    public JPanel getCuadricula() {
-        return cuadricula;
-    }
-
     public void setFondo(ImageIcon icon) {
         fondoLabel.setIcon(icon);
+    }
+
+    public Cuadro[] getCuadrosClickeados() {
+        return cuadrosClickeados;
+    }
+
+    public int getIndiceCuadrosClickeados() {
+        return indiceCuadrosClickeados;
+    }
+
+    public void aumentarIndiceCuadrosClickeados() {
+        if (indiceCuadrosClickeados == 1) {
+            navesTextField.requestFocus();
+        }
+        indiceCuadrosClickeados++;
     }
 
     /**
@@ -99,25 +297,26 @@ public class KonquestFrame extends javax.swing.JFrame {
         menuAcciones = new javax.swing.JPanel();
         nuevoButton = new javax.swing.JButton();
         terminarJuegoButton = new javax.swing.JButton();
-        terminarTurno = new javax.swing.JButton();
+        terminarTurnoButton = new javax.swing.JButton();
         calcularDistanciaButton = new javax.swing.JButton();
         consultaFlotaButton = new javax.swing.JButton();
         menuInstrucciones = new javax.swing.JPanel();
         instruccionLabel = new javax.swing.JLabel();
         Right = new javax.swing.JPanel();
         navesMandarLabel = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        terminarTurnoButton = new javax.swing.JButton();
+        navesTextField = new javax.swing.JTextField();
+        mandarNavesButton = new javax.swing.JButton();
         Center = new javax.swing.JPanel();
         Messages = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        MensajesList = new javax.swing.JList<>();
+        areaMensajes = new javax.swing.JList<>();
         fondoLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Konquest");
         setMaximumSize(new java.awt.Dimension(1100, 680));
         setMinimumSize(new java.awt.Dimension(1100, 680));
+        setResizable(false);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         North.setPreferredSize(new java.awt.Dimension(1100, 80));
@@ -140,16 +339,31 @@ public class KonquestFrame extends javax.swing.JFrame {
         terminarJuegoButton.setEnabled(false);
         menuAcciones.add(terminarJuegoButton);
 
-        terminarTurno.setText("Terminar turno");
-        terminarTurno.setEnabled(false);
-        menuAcciones.add(terminarTurno);
+        terminarTurnoButton.setText("Terminar turno");
+        terminarTurnoButton.setEnabled(false);
+        terminarTurnoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                terminarTurnoButtonActionPerformed(evt);
+            }
+        });
+        menuAcciones.add(terminarTurnoButton);
 
         calcularDistanciaButton.setText("Calcular distancia");
         calcularDistanciaButton.setEnabled(false);
+        calcularDistanciaButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                calcularDistanciaButtonActionPerformed(evt);
+            }
+        });
         menuAcciones.add(calcularDistanciaButton);
 
         consultaFlotaButton.setText("Consulta de flota");
         consultaFlotaButton.setEnabled(false);
+        consultaFlotaButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                consultaFlotaButtonActionPerformed(evt);
+            }
+        });
         menuAcciones.add(consultaFlotaButton);
 
         North.add(menuAcciones);
@@ -165,13 +379,18 @@ public class KonquestFrame extends javax.swing.JFrame {
         navesMandarLabel.setText("Naves a mandar:");
         Right.add(navesMandarLabel);
 
-        jTextField1.setEnabled(false);
-        jTextField1.setPreferredSize(new java.awt.Dimension(60, 28));
-        Right.add(jTextField1);
+        navesTextField.setEnabled(false);
+        navesTextField.setPreferredSize(new java.awt.Dimension(60, 28));
+        Right.add(navesTextField);
 
-        terminarTurnoButton.setText("Terminar turno");
-        terminarTurnoButton.setEnabled(false);
-        Right.add(terminarTurnoButton);
+        mandarNavesButton.setText("Enviar Naves");
+        mandarNavesButton.setEnabled(false);
+        mandarNavesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mandarNavesButtonActionPerformed(evt);
+            }
+        });
+        Right.add(mandarNavesButton);
 
         menuInstrucciones.add(Right, java.awt.BorderLayout.LINE_END);
 
@@ -187,9 +406,9 @@ public class KonquestFrame extends javax.swing.JFrame {
         Messages.setBorder(javax.swing.BorderFactory.createTitledBorder("Mensajes"));
         Messages.setPreferredSize(new java.awt.Dimension(1100, 200));
 
-        MensajesList.setBackground(new java.awt.Color(51, 51, 51));
-        MensajesList.setForeground(new java.awt.Color(199, 199, 199));
-        jScrollPane1.setViewportView(MensajesList);
+        areaMensajes.setBackground(new java.awt.Color(51, 51, 51));
+        areaMensajes.setForeground(new java.awt.Color(199, 199, 199));
+        jScrollPane1.setViewportView(areaMensajes);
 
         javax.swing.GroupLayout MessagesLayout = new javax.swing.GroupLayout(Messages);
         Messages.setLayout(MessagesLayout);
@@ -216,27 +435,51 @@ public class KonquestFrame extends javax.swing.JFrame {
         mapaDesign.setLocationRelativeTo(this);
         mapaDesign.setVisible(true);
         this.setEnabled(false);
+        revalidate();
+        repaint();
     }//GEN-LAST:event_nuevoButtonActionPerformed
+
+    private void calcularDistanciaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calcularDistanciaButtonActionPerformed
+        calcularDistancia();
+    }//GEN-LAST:event_calcularDistanciaButtonActionPerformed
+
+    private void mandarNavesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mandarNavesButtonActionPerformed
+        try {
+            enviarNaves();
+        } catch (ValidacionesException e) {
+            e.printStackTrace();
+        } catch (ListaException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_mandarNavesButtonActionPerformed
+
+    private void consultaFlotaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consultaFlotaButtonActionPerformed
+        consultarFlota();
+    }//GEN-LAST:event_consultaFlotaButtonActionPerformed
+
+    private void terminarTurnoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_terminarTurnoButtonActionPerformed
+        terminarTurnoJugador();
+    }//GEN-LAST:event_terminarTurnoButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel Center;
-    private javax.swing.JList<String> MensajesList;
     private javax.swing.JPanel Messages;
     private javax.swing.JPanel North;
     private javax.swing.JPanel Right;
+    private javax.swing.JList<String> areaMensajes;
     private javax.swing.JButton calcularDistanciaButton;
     private javax.swing.JButton consultaFlotaButton;
     private javax.swing.JLabel fondoLabel;
     private javax.swing.JLabel instruccionLabel;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JButton mandarNavesButton;
     private javax.swing.JPanel menuAcciones;
     private javax.swing.JPanel menuInstrucciones;
     private javax.swing.JLabel navesMandarLabel;
+    private javax.swing.JTextField navesTextField;
     private javax.swing.JButton nuevoButton;
     private javax.swing.JButton terminarJuegoButton;
-    private javax.swing.JButton terminarTurno;
     private javax.swing.JButton terminarTurnoButton;
     // End of variables declaration//GEN-END:variables
 }

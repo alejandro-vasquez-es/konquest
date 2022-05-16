@@ -13,7 +13,6 @@ public class MotorJuego {
 
     private final Jugador[] jugadores;
     private final Mapa mapa;
-    private Lista<Flota> flotas;
     private KonquestFrame frame;
     private Jugador jugadorActivo;
     private int indiceJugadorActivo;
@@ -22,7 +21,10 @@ public class MotorJuego {
     public MotorJuego(Jugador[] jugadores, Mapa mapa) {
         this.jugadores = jugadores;
         this.mapa = mapa;
-        flotas = new Lista<Flota>();
+    }
+
+    public void terminarTurno() {
+
     }
 
     public Jugador[] getJugadores() {
@@ -33,26 +35,25 @@ public class MotorJuego {
         return mapa;
     }
 
-    public Lista<Flota> getFlotas() {
-        return flotas;
-    }
-
     public void empezarPartida(KonquestFrame frame) throws ListaException {
         this.frame = frame;
-        JOptionPane.showMessageDialog(frame, "La partida a empezado", "Parida empezada", JOptionPane.INFORMATION_MESSAGE);
-        prepararFrame();
-        cargarPlanetasNeutrales();
-        cargarPlanetasJugador();
-        cargarPlanetasZombie();
-        cargarPlanetasFantasma();
         this.indiceJugadorActivo = 0;
-        this.turno = 0;
+        this.turno = 1;
         setSiguienteJugadorActivo();
+        frame.prepararFrame(this);
+        cargarPlanetas(mapa.getPlanetasNeutrales());
+        cargarPlanetas(mapa.getPlanetasJugador());
+        cargarPlanetas(mapa.getPlanetasZombie());
+        cargarPlanetas(mapa.getPlanetasFantasma());
+        JOptionPane.showMessageDialog(frame, "La partida ha empezado", "Partida empezada", JOptionPane.INFORMATION_MESSAGE);
+        frame.revalidate();
+        frame.repaint();
     }
 
-    public void cargarPlanetasNeutrales() throws ListaException {
-        for (int i = 0; i < mapa.getPlanetasNeutrales().obtenerLongitud(); i++) {
-            PlanetaNeutral planeta = mapa.getPlanetasNeutrales().obtenerContenido(i);
+    public void cargarPlanetas(Lista planetas) throws ListaException {
+        int longitud = planetas.obtenerLongitud();
+        for (int i = 0; i < longitud; i++) {
+            Planeta planeta = (Planeta) planetas.obtenerContenido(i);
             Posicion pos = planeta.getPosicion();
             int columna = pos.getColumna();
             int fila = pos.getFila();
@@ -62,51 +63,18 @@ public class MotorJuego {
         }
     }
 
-    public void cargarPlanetasJugador() throws ListaException {
-        for (int i = 0; i < mapa.getPlanetasJugador().obtenerLongitud(); i++) {
-            PlanetaJugador planeta = mapa.getPlanetasJugador().obtenerContenido(i);
-            Posicion pos = planeta.getPosicion();
-            int columna = pos.getColumna();
-            int fila = pos.getFila();
-            Cuadro planetaCuadro = frame.getCuadros()[columna][fila];
-            planetaCuadro.setPlaneta(planeta);
-            planetaCuadro.setIcon();
-        }
+    public void nuevaFlota(Cuadro[] cuadrosClickeados, int naves) {
+        Lista<Flota> flotas = jugadorActivo.getFlotas();
+        int numero = flotas.obtenerLongitud()+1;
+        Planeta origen = cuadrosClickeados[0].getPlaneta();
+        Planeta destino = cuadrosClickeados[1].getPlaneta();
+        double porcentajeMuerte = origen.getPorcentajeMuerte();
+        int turnoLlegada = Mapa.medirDistancia(origen.getPosicion(), destino.getPosicion());
+        Flota nuevaFlota = new Flota(numero, naves, porcentajeMuerte,origen,destino, turnoLlegada, turno);
+        origen.enviarNaves(naves);
+        flotas.agregar(nuevaFlota);
     }
 
-    public void cargarPlanetasZombie() throws ListaException {
-        for (int i = 0; i < mapa.getPlanetasZombie().obtenerLongitud(); i++) {
-            PlanetaZombie planeta = mapa.getPlanetasZombie().obtenerContenido(i);
-            Posicion pos = planeta.getPosicion();
-            int columna = pos.getColumna();
-            int fila = pos.getFila();
-            Cuadro planetaCuadro = frame.getCuadros()[columna][fila];
-            planetaCuadro.setPlaneta(planeta);
-            planetaCuadro.setIcon();
-        }
-    }
-
-    public void cargarPlanetasFantasma() throws ListaException {
-        for (int i = 0; i < mapa.getPlanetasFantasma().obtenerLongitud(); i++) {
-            PlanetaFantasma planeta = mapa.getPlanetasFantasma().obtenerContenido(i);
-            Posicion pos = planeta.getPosicion();
-            int columna = pos.getColumna();
-            int fila = pos.getFila();
-            Cuadro planetaCuadro = frame.getCuadros()[columna][fila];
-            planetaCuadro.setPlaneta(planeta);
-            planetaCuadro.setIcon();
-        }
-    }
-
-    public void prepararFrame() {
-        frame.getMessages().setVisible(true);
-        frame.getCenter().removeAll();
-        frame.getCenter().revalidate();
-        frame.getCenter().repaint();
-        ImageIcon imagen = new ImageIcon(getClass().getResource("/imagenes/mapa/" + mapa.getTipo() + ".jpg"));
-        frame.setFondo(imagen);
-        frame.crearCuadricula(mapa);
-    }
 
     public void setSiguienteJugadorActivo() {
         jugadorActivo = jugadores[indiceJugadorActivo];
@@ -114,7 +82,19 @@ public class MotorJuego {
         if (indiceJugadorActivo > jugadores.length) {
             indiceJugadorActivo = 0;
             turno++;
+            frame.actualizarAreaMensajes();
         }
     }
 
+    public Jugador getJugadorActivo() {
+        return jugadorActivo;
+    }
+
+    public int getTurno() {
+        return turno;
+    }
+
+    public KonquestFrame getFrame() {
+        return frame;
+    }
 }

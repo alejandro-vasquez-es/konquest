@@ -16,4 +16,17 @@ public class PlanetaNeutral extends  Planeta{
 
     }
 
+
+    public String toString(boolean[] valores){
+        /*mostrar naves = 0
+        mostrar estadisticas = 1*/
+        if(!valores[0] && valores[1])
+            return  "nombre: " + nombre + ", porcentaje de muerte: " + porcentajeMuerte + ", producción: " + produccion;
+        if(valores[0] && valores[1])
+            return  "nombre: " + nombre + ", naves: " + cantidadNaves + ", porcentaje de muerte: " + porcentajeMuerte + ", producción: " + produccion;
+        if(valores[0] && !valores[1])
+            return  "nombre: " + nombre + ", naves: " + cantidadNaves;
+        return "nombre: " + nombre;
+    }
+
 }

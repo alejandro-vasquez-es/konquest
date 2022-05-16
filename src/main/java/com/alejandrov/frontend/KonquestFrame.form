@@ -10,6 +10,7 @@
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[1100, 680]"/>
     </Property>
+    <Property name="resizable" type="boolean" value="false"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -69,23 +70,32 @@
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JButton" name="terminarTurno">
+            <Component class="javax.swing.JButton" name="terminarTurnoButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Terminar turno"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="terminarTurnoButtonActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="calcularDistanciaButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Calcular distancia"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="calcularDistanciaButtonActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="consultaFlotaButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Consulta de flota"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="consultaFlotaButtonActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -179,11 +189,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="7_terminarTurno">
-                  <CodeVariable name="terminarTurno" type="8194" declaredType="javax.swing.JButton"/>
+                <CodeExpression id="7_terminarTurnoButton">
+                  <CodeVariable name="terminarTurnoButton" type="8194" declaredType="javax.swing.JButton"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="terminarTurno"/>
+                      <ComponentRef name="terminarTurnoButton"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -263,7 +273,7 @@
                     <Property name="text" type="java.lang.String" value="Naves a mandar:"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JTextField" name="jTextField1">
+                <Component class="javax.swing.JTextField" name="navesTextField">
                   <Properties>
                     <Property name="enabled" type="boolean" value="false"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -271,11 +281,14 @@
                     </Property>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JButton" name="terminarTurnoButton">
+                <Component class="javax.swing.JButton" name="mandarNavesButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Terminar turno"/>
+                    <Property name="text" type="java.lang.String" value="Enviar Naves"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mandarNavesButtonActionPerformed"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -338,7 +351,7 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JList" name="MensajesList">
+            <Component class="javax.swing.JList" name="areaMensajes">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="33" green="33" red="33" type="rgb"/>
