@@ -3,6 +3,7 @@ package com.alejandrov.backend;
 import com.alejandrov.backend.jugador.Jugador;
 import com.alejandrov.backend.listas.Lista;
 import com.alejandrov.backend.listas.ListaException;
+import com.alejandrov.frontend.GanadorFrame;
 import com.alejandrov.frontend.KonquestFrame;
 import com.alejandrov.frontend.componentes.Cuadro;
 import com.alejandrov.frontend.planetas.*;
@@ -11,7 +12,7 @@ import javax.swing.*;
 
 public class MotorJuego {
 
-    private final Jugador[] jugadores;
+    private final Lista<Jugador> jugadores;
     private final Mapa mapa;
     private KonquestFrame frame;
     private Jugador jugadorActivo;
@@ -21,11 +22,14 @@ public class MotorJuego {
     private Lista<Flota> flotasZombies;
 
     public MotorJuego(Jugador[] jugadores, Mapa mapa) {
-        this.jugadores = jugadores;
+        this.jugadores = new Lista<Jugador>();
+        for (int i = 0; i < jugadores.length; i++) {
+            this.jugadores.agregar(jugadores[i]);
+        }
         this.mapa = mapa;
     }
 
-    public Jugador[] getJugadores() {
+    public Lista<Jugador> getJugadores() {
         return jugadores;
     }
 
@@ -70,8 +74,8 @@ public class MotorJuego {
     }
 
     public void aterrizarNaves() throws ListaException {
-        for (int i = 0; i < jugadores.length; i++) {
-            jugadores[i].aterrizarFlotas(turno, mapa, frame);
+        for (int i = 0; i < jugadores.obtenerLongitud(); i++) {
+            jugadores.obtenerContenido(i).aterrizarFlotas(turno, mapa, frame);
         }
         for (int i = 0; i < flotasZombies.obtenerLongitud(); i++) {
             Flota flota = flotasZombies.obtenerContenido(i);
@@ -86,10 +90,10 @@ public class MotorJuego {
         }
     }
 
-    public void setSiguienteJugadorActivo() {
-        jugadorActivo = jugadores[indiceJugadorActivo];
+    public void setSiguienteJugadorActivo() throws ListaException {
+        jugadorActivo = jugadores.obtenerContenido(indiceJugadorActivo);
         indiceJugadorActivo++;
-        if(jugadorActivo == null){
+        if (jugadorActivo == null) {
             try {
                 frame.terminarTurnoJugador();
             } catch (ListaException e) {
@@ -98,8 +102,8 @@ public class MotorJuego {
         }
     }
 
-    public void terminarTurnoJugador() {
-        if (indiceJugadorActivo == jugadores.length){
+    public void terminarTurnoJugador() throws ListaException {
+        if (indiceJugadorActivo == jugadores.obtenerLongitud()) {
             indiceJugadorActivo = 0;
             avanzarTurnoPartida();
         }
@@ -130,20 +134,23 @@ public class MotorJuego {
         }
     }
 
-    public void comprobarGanador() {
+    public void comprobarGanador() throws ListaException {
         int jugadoresVivos = 0;
         int indiceGanador = 0;
-        for (int i = 0; i < jugadores.length; i++) {
-            if(jugadores[i].getPlanetas().obtenerLongitud() == 0 && jugadores[i].getFlotas().obtenerLongitud() == 0) {
-                JOptionPane.showMessageDialog(frame, "El jugador " + jugadores[i].getNombre() + " ha perdido, sale de la partida.");
-                jugadores[i] = null;
-            }else {
-            jugadoresVivos++;
-            indiceGanador = i;
+        for (int i = 0; i < jugadores.obtenerLongitud(); i++) {
+            if (jugadores.obtenerContenido(i).getPlanetas().obtenerLongitud() == 0 && jugadores.obtenerContenido(i).getFlotas().obtenerLongitud() == 0) {
+                JOptionPane.showMessageDialog(frame, "El jugador " + jugadores.obtenerContenido(i).getNombre() + " ha perdido, sale de la partida.");
+                jugadores.eliminarElementoEnIndice(i);
+            } else {
+                jugadoresVivos++;
+                indiceGanador = i;
             }
         }
-        if(jugadoresVivos == 1) {
-            jugadores[indiceGanador].ganar();
+        if (jugadoresVivos == 1) {
+            frame.limpiarFrame();
+            GanadorFrame ganadorFrame = new GanadorFrame(jugadores.obtenerContenido(indiceGanador));
+            ganadorFrame.setVisible(true);
+            ganadorFrame.setLocationRelativeTo(frame);
         }
     }
 

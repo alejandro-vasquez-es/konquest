@@ -94,7 +94,7 @@ public class KonquestFrame extends javax.swing.JFrame implements Validar {
     }
 
     public void terminarTurnoJugador() throws ListaException {
-        if (juego.getIndiceJugadorActivo() == juego.getJugadores().length)
+        if (juego.getIndiceJugadorActivo() == juego.getJugadores().obtenerLongitud())
             actualizarAreaMensajes();
         juego.terminarTurnoJugador();
         deseleccionarCuadros();
@@ -295,6 +295,7 @@ public class KonquestFrame extends javax.swing.JFrame implements Validar {
     }
 
     public void limpiarFrame () {
+        instruccionLabel.setText("");
         Center.removeAll();
         modelAreaMensajes.removeAllElements();
         terminarTurnoButton.setEnabled(false);

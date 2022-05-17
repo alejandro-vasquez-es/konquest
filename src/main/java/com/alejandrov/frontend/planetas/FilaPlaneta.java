@@ -30,9 +30,6 @@ public class FilaPlaneta implements Validar {
         this.mapa = mapa;
     }
 
-    public int getNumeroFila() {
-        return numeroFila;
-    }
 
     public String getNombre() {
         return nombre;

@@ -9,6 +9,7 @@ import com.alejandrov.backend.MotorJuego;
 import com.alejandrov.backend.enums.TipoPlanetas;
 import com.alejandrov.backend.enums.TiposJugador;
 import com.alejandrov.backend.enums.TiposMapa;
+import com.alejandrov.backend.interfaces.Validable;
 import com.alejandrov.backend.jugador.Jugador;
 import com.alejandrov.backend.listas.Lista;
 import com.alejandrov.backend.listas.ListaException;
@@ -23,7 +24,7 @@ import java.io.ObjectInputStream;
 /**
  * @author aleja
  */
-public class MapaDesignFrame extends javax.swing.JFrame {
+public class MapaDesignFrame extends javax.swing.JFrame implements Validable {
 
     private DefaultTableModel model;
     private KonquestFrame parent;
@@ -69,7 +70,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
 
     // private Mapa crearMapa() {
     private Mapa crearMapa() throws ValidacionesException {
-        sonOpcionesValidas();
+        validar();
         String nombre = nombreTextField.getText();
         int filas = ((Integer) alturaSpinner.getValue());
         int columnas = ((Integer) anchuraSpinner.getValue());
@@ -118,12 +119,6 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         }
     }
 
-    public void eliminarJugador(int row) throws ListaException {
-            String jugadorEliminado = tablaJugadores.getValueAt(row, 0).toString();
-            model.removeRow(row);
-            nombres.eliminarContenido(jugadorEliminado);
-    }
-
     public String crearNombreJugador() {
         int numeroJugador = 1;
         String nombre = "Jugador " + numeroJugador;
@@ -135,7 +130,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         return nombre;
     }
 
-    private void sonOpcionesValidas() throws ValidacionesException {// validaciones
+    public void validar() throws ValidacionesException {// validaciones
 
         // no menos de dos jugadores
         if (tablaJugadores.getRowCount() < 2) {
@@ -172,7 +167,7 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         }
     }
 
-    public void configurarJuego() throws ValidacionesException {
+    public void configurarJuego() throws ValidacionesException, ListaException {
         Mapa mapa = crearMapa();
         Jugador[] jugadores = crearJugadores();
         juego = new MotorJuego(jugadores, mapa);
@@ -638,6 +633,8 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         try {
             configurarJuego();
         } catch (ValidacionesException e) {
+            e.printStackTrace();
+        } catch (ListaException e) {
             e.printStackTrace();
         }
     }// GEN-LAST:event_aceptarButtonActionPerformed

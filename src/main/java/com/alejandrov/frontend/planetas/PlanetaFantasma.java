@@ -13,7 +13,7 @@ import javax.swing.*;
 public class PlanetaFantasma extends Planeta implements RecibirIncursion {
 
     public PlanetaFantasma(String nombre, Mapa mapa) throws ListaException {
-        super(nombre + "fantasma", crearCantidadDeNavesAleatoria(), crearPosiciónAleatoria(mapa), crearPorcentajeMuerteAleatorio(), crearProduccionAleatoria());
+        super(nombre , crearCantidadDeNavesAleatoria(), crearPosiciónAleatoria(mapa), crearPorcentajeMuerteAleatorio(), crearProduccionAleatoria());
         imagen = new ImageIcon(getClass().getResource("/imagenes/planetas/NEUTRAL.png"));
     }
 

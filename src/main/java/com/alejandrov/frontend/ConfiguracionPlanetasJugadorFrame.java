@@ -29,14 +29,17 @@ public class ConfiguracionPlanetasJugadorFrame extends javax.swing.JFrame {
     private Jugador[] jugadores;
     private KonquestFrame konquestFrame;
 
-    public ConfiguracionPlanetasJugadorFrame(JFrame parent, MotorJuego juego, KonquestFrame konquestFrame) {
+    public ConfiguracionPlanetasJugadorFrame(JFrame parent, MotorJuego juego, KonquestFrame konquestFrame) throws ListaException {
         this.juego = juego;
         this.parent = parent;
         this.konquestFrame = konquestFrame;
         this.nombresPlaneta = new Lista<String>();
         initComponents();
 
-        jugadores = juego.getJugadores();
+        jugadores = new Jugador[juego.getJugadores().obtenerLongitud()];
+        for (int i = 0; i < juego.getJugadores().obtenerLongitud(); i++) {
+            jugadores[i] = juego.getJugadores().obtenerContenido(i);
+        }
 
         initTablaPlanetas();
         if (juego.getMapa().esAlAzar()) {
@@ -320,9 +323,9 @@ public class ConfiguracionPlanetasJugadorFrame extends javax.swing.JFrame {
     }
 
     public Jugador buscarJugador(String nombre) {
-        for (int i = 0; i < juego.getJugadores().length; i++) {
-            if (juego.getJugadores()[i].getNombre().equals(nombre)) {
-                return juego.getJugadores()[i];
+        for (int i = 0; i < jugadores.length; i++) {
+            if (jugadores[i].getNombre().equals(nombre)) {
+                return jugadores[i];
             }
         }
         return null;
