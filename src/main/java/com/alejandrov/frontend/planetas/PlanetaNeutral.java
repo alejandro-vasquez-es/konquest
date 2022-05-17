@@ -3,6 +3,8 @@ package com.alejandrov.frontend.planetas;
 import com.alejandrov.backend.Flota;
 import com.alejandrov.backend.Mapa;
 import com.alejandrov.backend.Posicion;
+import com.alejandrov.backend.interfaces.RecibirIncursion;
+import com.alejandrov.backend.interfaces.Terraformable;
 import com.alejandrov.backend.jugador.Jugador;
 import com.alejandrov.backend.listas.ListaException;
 import com.alejandrov.frontend.KonquestFrame;
@@ -10,7 +12,7 @@ import com.alejandrov.frontend.componentes.Cuadro;
 
 import javax.swing.*;
 
-public class PlanetaNeutral extends Planeta implements Terraformable {
+public class PlanetaNeutral extends Planeta implements Terraformable, RecibirIncursion {
 
     public PlanetaNeutral(String nombre, int cantidadNaves, Posicion posicion, double porcentajeMuerte, int produccion) {
         super(nombre, cantidadNaves, posicion, porcentajeMuerte, produccion);

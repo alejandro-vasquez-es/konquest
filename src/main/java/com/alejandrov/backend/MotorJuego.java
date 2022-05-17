@@ -17,6 +17,8 @@ public class MotorJuego {
     private Jugador jugadorActivo;
     private int indiceJugadorActivo;
     private int turno;
+    private int turnoZombie;
+    private Lista<Flota> flotasZombies;
 
     public MotorJuego(Jugador[] jugadores, Mapa mapa) {
         this.jugadores = jugadores;
@@ -44,6 +46,8 @@ public class MotorJuego {
         JOptionPane.showMessageDialog(frame, "La partida ha empezado", "Partida empezada", JOptionPane.INFORMATION_MESSAGE);
         frame.revalidate();
         frame.repaint();
+        flotasZombies = new Lista<Flota>();
+        turnoZombie = 1;
     }
 
     public void cargarPlanetas(Lista planetas) throws ListaException {
@@ -65,35 +69,54 @@ public class MotorJuego {
         jugadorActivo.agregarFlota(origen, destino, naves, turno);
     }
 
-//    public void cargarFlotas() throws ListaException {
-//        for (int i = 0; i < jugadores.length; i++) {
-//            for (int j = 0; j < jugadores[i].getFlotas().obtenerLongitud(); j++) {
-//                Flota flota = jugadores[i].getFlotas().obtenerContenido(j);
-//                if (!flotas.incluye(flota)) {
-//                    flotas.agregar(flota);
-//                    flotasEnTurno.agregar(flota);
-//                }
-//            }
-//        }
-//    }
-
     public void aterrizarNaves() throws ListaException {
         for (int i = 0; i < jugadores.length; i++) {
             jugadores[i].aterrizarFlotas(turno, mapa, frame);
         }
+        for (int i = 0; i < flotasZombies.obtenerLongitud(); i++) {
+            Flota flota = flotasZombies.obtenerContenido(i);
+            if (flota.getTurnoLlegada() == turno) {
+                flota.aterrizar(mapa, frame);
+                flotasZombies.eliminarElementoEnIndice(i);
+                i--;
+            }
+        }
+        for (int i = 0; i < flotasZombies.obtenerLongitud(); i++) {
+            flotasZombies.obtenerContenido(i).setNumero(i + 1);
+        }
     }
-
 
     public void setSiguienteJugadorActivo() {
         jugadorActivo = jugadores[indiceJugadorActivo];
         indiceJugadorActivo++;
+        if(jugadorActivo == null){
+            try {
+                frame.terminarTurnoJugador();
+            } catch (ListaException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void terminarTurnoJugador() {
-        if (indiceJugadorActivo == jugadores.length)
+        if (indiceJugadorActivo == jugadores.length){
+            indiceJugadorActivo = 0;
             avanzarTurnoPartida();
+        }
         setSiguienteJugadorActivo();
 
+    }
+
+    public void avanzarTurnoPartida() {
+        try {
+            turno++;
+            producirPlanetas();
+            aterrizarNaves();
+            incursionesZombie();
+            comprobarGanador();
+        } catch (ListaException e) {
+            e.printStackTrace();
+        }
     }
 
     public void producirPlanetas() {
@@ -107,14 +130,32 @@ public class MotorJuego {
         }
     }
 
-    public void avanzarTurnoPartida() {
-        try {
-            indiceJugadorActivo = 0;
-            turno++;
-            producirPlanetas();
-            aterrizarNaves();
-        } catch (ListaException e) {
-            e.printStackTrace();
+    public void comprobarGanador() {
+        int jugadoresVivos = 0;
+        int indiceGanador = 0;
+        for (int i = 0; i < jugadores.length; i++) {
+            if(jugadores[i].getPlanetas().obtenerLongitud() == 0 && jugadores[i].getFlotas().obtenerLongitud() == 0) {
+                JOptionPane.showMessageDialog(frame, "El jugador " + jugadores[i].getNombre() + " ha perdido, sale de la partida.");
+                jugadores[i] = null;
+            }else {
+            jugadoresVivos++;
+            indiceGanador = i;
+            }
+        }
+        if(jugadoresVivos == 1) {
+            jugadores[indiceGanador].ganar();
+        }
+    }
+
+    public void incursionesZombie() throws ListaException {
+        if (turnoZombie != 2) {
+            turnoZombie++;
+        } else {
+            for (int i = 0; i < mapa.getPlanetasZombie().obtenerLongitud(); i++) {
+                PlanetaZombie zombie = mapa.getPlanetasZombie().obtenerContenido(i);
+                zombie.realizarIncursion(mapa, flotasZombies, turno);
+            }
+            turnoZombie = 0;
         }
     }
 
@@ -133,6 +174,4 @@ public class MotorJuego {
     public int getIndiceJugadorActivo() {
         return indiceJugadorActivo;
     }
-
-
 }

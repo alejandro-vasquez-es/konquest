@@ -3,10 +3,7 @@ package com.alejandrov.backend;
 import com.alejandrov.backend.listas.ListaException;
 import com.alejandrov.frontend.KonquestFrame;
 import com.alejandrov.frontend.componentes.Cuadro;
-import com.alejandrov.frontend.planetas.Planeta;
-import com.alejandrov.frontend.planetas.PlanetaFantasma;
-import com.alejandrov.frontend.planetas.PlanetaJugador;
-import com.alejandrov.frontend.planetas.PlanetaNeutral;
+import com.alejandrov.frontend.planetas.*;
 
 public class Flota {
 
@@ -31,19 +28,35 @@ public class Flota {
     public void aterrizar(Mapa mapa, KonquestFrame frame) throws ListaException {
         double porcentaje = Planeta.crearPorcentajeMuerteAleatorio();
         if (destino.isActivo()) {
-            if(destino instanceof PlanetaFantasma){
-                destino.recibirIncursion(this, mapa, frame);
+            if (destino instanceof PlanetaFantasma) {
+                ((PlanetaFantasma) destino).recibirIncursion(this, mapa, frame);
             } else if (destino instanceof PlanetaJugador && origen instanceof PlanetaJugador && ((PlanetaJugador) destino).getJugador().equals(((PlanetaJugador) origen).getJugador())) {
                 aterrizarPlanetaAliado(frame);
-            } else if (porcentaje > porcentajeMuerte) { // el planeta se defendió
-                frame.agregarFlotaAterrizada("El planeta " + destino.getNombre() + " se defendió de un ataque del jugador " + ((PlanetaJugador) origen).getJugador().getNombre() + " lanzado desde el planeta " + origen.getNombre());
-            } else { // ataque exitoso
-                if (destino instanceof PlanetaJugador || destino instanceof PlanetaNeutral) {
-                    destino.recibirIncursion(this, mapa, frame);
+            } else if (porcentaje > porcentajeMuerte && naves < destino.getCantidadNaves()) { // el planeta se defendió
+                destino.agregarNaves(-naves);
+                frame.agregarFlotaAterrizada("El planeta " + destino.getNombre() + " se defendió de un ataque del planeta " + origen.getNombre());
+            } else if (origen instanceof PlanetaZombie) { // ataque zombie
+                Cuadro cuadro = destino.getCuadro();
+                if (destino instanceof PlanetaNeutral) {
+                    mapa.getPlanetasNeutrales().eliminarContenido((PlanetaNeutral) destino); // eliminar el planeta de la lista de planetas neutrales del mapa
+                } else if (destino instanceof PlanetaJugador) {
+                    ((PlanetaJugador) destino).getJugador().getPlanetas().eliminarContenido((PlanetaJugador) destino); //eliminarle el planeta al jugador destino
+                    mapa.getPlanetasJugador().eliminarContenido((PlanetaJugador) destino);// eliminar planeta del mapa
                 }
+                destino.setActivo(false);
+
+                cuadro.setPlaneta(null);
+                cuadro.removeAll();
+
+                frame.agregarFlotaAterrizada("El planeta " + destino.getNombre() + " ha sido exterminado por el planeta zombie " + origen.getNombre());
+
+            } else {// ataque exitoso
+                if (destino instanceof PlanetaJugador) ((PlanetaJugador) destino).recibirIncursion(this, mapa, frame);
+                if (destino instanceof PlanetaNeutral) ((PlanetaNeutral) destino).recibirIncursion(this, mapa, frame);
+
             }
 
-        }else {
+        } else {
             origen.agregarNaves(naves);
         }
     }

@@ -1,4 +1,4 @@
-package com.alejandrov.frontend.planetas;
+package com.alejandrov.backend.interfaces;
 
 import com.alejandrov.backend.listas.ListaException;
 import com.alejandrov.frontend.ValidacionesException;

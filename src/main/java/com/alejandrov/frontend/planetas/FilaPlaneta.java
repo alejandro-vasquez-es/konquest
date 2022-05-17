@@ -2,12 +2,13 @@ package com.alejandrov.frontend.planetas;
 
 import com.alejandrov.backend.Mapa;
 import com.alejandrov.backend.Posicion;
+import com.alejandrov.backend.interfaces.Validar;
 import com.alejandrov.backend.listas.ListaException;
 import com.alejandrov.frontend.ValidacionesException;
 
 import javax.swing.*;
 
-public class FilaPlaneta implements  Validar{
+public class FilaPlaneta implements Validar {
 
     protected int numeroFila;
     protected String nombre;

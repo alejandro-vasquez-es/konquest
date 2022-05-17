@@ -3,6 +3,7 @@ package com.alejandrov.backend;
 import com.alejandrov.backend.jugador.Jugador;
 import com.alejandrov.backend.listas.Lista;
 import com.alejandrov.backend.listas.ListaException;
+import com.alejandrov.frontend.componentes.Cuadro;
 import com.alejandrov.frontend.planetas.*;
 
 import java.io.File;
@@ -33,6 +34,7 @@ public class Mapa implements Serializable {
     private int navesAtaqueZombie;
     private Lista<PlanetaFantasma> planetasFantasma;
     private Lista<PlanetaZombie> planetasZombie;
+    private Cuadro[][] cuadros;
 
     public Mapa(String nombre, int filas, int columnas, boolean alAzar, boolean mapaCiego, boolean acumulativo, int turnosMaximos, String tipo, int totalPlanetasNeutrales, boolean mostrarNavesNeutrales, boolean mostrarEstadisticasPlanetasNeutrales, int ProduccionPlanetasNeutrales, int cantidadPlanetasFantasmas, int cantidadPlanetasZombie, int navesAtaqueZombie) {
         this.nombre = nombre;
@@ -122,8 +124,16 @@ public class Mapa implements Serializable {
         return acumulativo;
     }
 
+    public Cuadro[][] getCuadros() {
+        return cuadros;
+    }
+
     public boolean seMuestranNavesNeutrales() {
         return mostrarNavesNeutrales;
+    }
+
+    public void setCuadros(Cuadro[][] cuadros) {
+        this.cuadros = cuadros;
     }
 
     public boolean seMuestranEstadisticasPlanetasNeutrales() {
@@ -160,10 +170,6 @@ public class Mapa implements Serializable {
 
     public int getNavesAtaqueZombie() {
         return navesAtaqueZombie;
-    }
-
-    public void agregarPlaneta(Planeta planeta) {
-        planetas.agregar(planeta);
     }
 
     public boolean esPosicionOcupada(Posicion posicion) throws ListaException {

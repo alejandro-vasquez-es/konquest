@@ -3,6 +3,8 @@ package com.alejandrov.frontend.planetas;
 import com.alejandrov.backend.Flota;
 import com.alejandrov.backend.Mapa;
 import com.alejandrov.backend.Posicion;
+import com.alejandrov.backend.interfaces.RecibirIncursion;
+import com.alejandrov.backend.interfaces.Terraformable;
 import com.alejandrov.backend.jugador.Jugador;
 import com.alejandrov.backend.listas.ListaException;
 import com.alejandrov.frontend.KonquestFrame;
@@ -10,7 +12,7 @@ import com.alejandrov.frontend.componentes.Cuadro;
 
 import javax.swing.*;
 
-public class PlanetaJugador extends Planeta implements Terraformable {
+public class PlanetaJugador extends Planeta implements Terraformable, RecibirIncursion {
 
     private Jugador jugador;
     private String tipo;
@@ -28,7 +30,7 @@ public class PlanetaJugador extends Planeta implements Terraformable {
         PlanetaJugador planeta = terraformar(flota);
         Cuadro cuadro = getCuadro();
         jugador.getPlanetas().eliminarContenido(this); //eliminarle el planeta al jugador destino
-        jugador.getPlanetas().agregar(planeta);// agregarle el planeta al jugador origen
+        origen.getJugador().getPlanetas().agregar(planeta);// agregarle el planeta al jugador origen
         activo = false;
 
         mapa.getPlanetasJugador().cambiarContenido(this, planeta);

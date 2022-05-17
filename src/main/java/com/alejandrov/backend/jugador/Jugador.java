@@ -59,6 +59,10 @@ public class Jugador implements Serializable {
         }
     }
 
+    public void ganar() {
+
+    }
+
     public Lista<PlanetaJugador> getPlanetas() {
         return planetas;
     }

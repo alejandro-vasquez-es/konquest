@@ -81,7 +81,7 @@ public abstract class Planeta {
         int columna = (int) Math.floor(Math.random() * ((mapa.getColumnas() - 1) - 0 + 1) + 0);
         int fila = (int) Math.floor(Math.random() * ((mapa.getFilas() - 1) - 0 + 1) + 0);
         Posicion pos = new Posicion(columna, fila);
-        if (mapa.esPosicionOcupada(pos)) {
+        while (mapa.esPosicionOcupada(pos)) {
             columna = (int) Math.floor(Math.random() * ((mapa.getColumnas() - 1) - 0 + 1) + 0);
             fila = (int) Math.floor(Math.random() * ((mapa.getFilas() - 1) - 0 + 1) + 0);
             pos = new Posicion(columna, fila);
@@ -107,5 +107,7 @@ public abstract class Planeta {
         return activo;
     }
 
-    public abstract void recibirIncursion(Flota flota, Mapa mapa, KonquestFrame frame) throws ListaException;
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
 }

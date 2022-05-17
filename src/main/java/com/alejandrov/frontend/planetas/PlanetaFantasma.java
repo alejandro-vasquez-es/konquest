@@ -3,13 +3,14 @@ package com.alejandrov.frontend.planetas;
 import com.alejandrov.backend.Flota;
 import com.alejandrov.backend.Mapa;
 import com.alejandrov.backend.Posicion;
+import com.alejandrov.backend.interfaces.RecibirIncursion;
 import com.alejandrov.backend.listas.ListaException;
 import com.alejandrov.frontend.KonquestFrame;
 import com.alejandrov.frontend.componentes.Cuadro;
 
 import javax.swing.*;
 
-public class PlanetaFantasma extends Planeta{
+public class PlanetaFantasma extends Planeta implements RecibirIncursion {
 
     public PlanetaFantasma(String nombre, Mapa mapa) throws ListaException {
         super(nombre + "fantasma", crearCantidadDeNavesAleatoria(), crearPosiciónAleatoria(mapa), crearPorcentajeMuerteAleatorio(), crearProduccionAleatoria());
@@ -32,7 +33,7 @@ public class PlanetaFantasma extends Planeta{
     @Override
     public void recibirIncursion(Flota flota, Mapa mapa, KonquestFrame frame) throws ListaException {
 
-        PlanetaJugador origen = (PlanetaJugador) flota.getOrigen();
+        Planeta origen = flota.getOrigen();
         Cuadro cuadro = getCuadro();
 
         activo = false;
@@ -41,7 +42,7 @@ public class PlanetaFantasma extends Planeta{
         cuadro.setPlaneta(null);
         cuadro.removeAll();
 
-        frame.agregarFlotaAterrizada("El planeta " + nombre + " era un planeta fantasma por lo que la incursión hecha por el jugador " + origen.getJugador().getNombre() + " realizada desde el planeta " + origen.getNombre() + " se predió en el espacio :(");
+        frame.agregarFlotaAterrizada("El planeta " + nombre + " era un planeta fantasma por lo que la incursión realizada desde el planeta " + origen.getNombre() + " se predió en el espacio :(");
 
     }
 }

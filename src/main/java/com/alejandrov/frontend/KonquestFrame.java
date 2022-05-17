@@ -7,6 +7,7 @@ package com.alejandrov.frontend;
 import com.alejandrov.backend.Mapa;
 import com.alejandrov.backend.MotorJuego;
 import com.alejandrov.backend.Posicion;
+import com.alejandrov.backend.interfaces.Validar;
 import com.alejandrov.backend.listas.Lista;
 import com.alejandrov.backend.listas.ListaException;
 import com.alejandrov.frontend.componentes.Cuadro;
@@ -19,7 +20,7 @@ import javax.swing.border.Border;
 /**
  * @author aleja
  */
-public class KonquestFrame extends javax.swing.JFrame {
+public class KonquestFrame extends javax.swing.JFrame implements Validar {
 
     final private int ALTURA_MAIN;
     private JPanel cuadricula;
@@ -74,6 +75,7 @@ public class KonquestFrame extends javax.swing.JFrame {
         }
 
         Center.add(cuadricula);
+        juego.getMapa().setCuadros(cuadros);
     }
 
     public void deseleccionarCuadros() {
@@ -92,13 +94,13 @@ public class KonquestFrame extends javax.swing.JFrame {
     }
 
     public void terminarTurnoJugador() throws ListaException {
-        if (juego.getIndiceJugadorActivo() == 2)
+        if (juego.getIndiceJugadorActivo() == juego.getJugadores().length)
             actualizarAreaMensajes();
         juego.terminarTurnoJugador();
         deseleccionarCuadros();
         setinstruccionLabel();
         setToolTips();
-        JOptionPane.showMessageDialog(this, "Turno del jugador " + juego.getJugadorActivo().getNombre());
+        JOptionPane.showMessageDialog(this, "Turno del jugador " + juego.getJugadorActivo().getNombre()+", planetas color: " +juego.getJugadorActivo().getColor());
         cuadricula.revalidate();
         cuadricula.repaint();
     }
@@ -122,7 +124,6 @@ public class KonquestFrame extends javax.swing.JFrame {
         setToolTips();
         iniciarAreaMensajes();
         setinstruccionLabel();
-        terminarJuegoButton.setEnabled(true);
         terminarTurnoButton.setEnabled(true);
         calcularDistanciaButton.setEnabled(true);
         consultaFlotaButton.setEnabled(true);
@@ -134,6 +135,7 @@ public class KonquestFrame extends javax.swing.JFrame {
     public void iniciarAreaMensajes() {
         modelAreaMensajes = new DefaultListModel<String>();
         areaMensajes.setModel(modelAreaMensajes);
+        modelAreaMensajes.addElement("Turno 1");
     }
 
     public void actualizarAreaMensajes() {
@@ -223,7 +225,7 @@ public class KonquestFrame extends javax.swing.JFrame {
     }
 
     private void enviarNaves() throws ValidacionesException, ListaException {
-        validacioneEnviarNaves();
+        validar();
         int naves = Integer.parseInt(navesTextField.getText());
         juego.nuevaFlota(cuadrosClickeados, naves);
         setToolTips();
@@ -232,7 +234,8 @@ public class KonquestFrame extends javax.swing.JFrame {
         deseleccionarCuadros();
     }
 
-    public void validacioneEnviarNaves() throws ValidacionesException {
+    @Override
+    public void validar() throws ValidacionesException {
         //cuadros seleccionados
         if (!hayCuadrosSeleccionados()) {
             throw new ValidacionesException("Por favor selecciona dos planetas para enviar naves", this);
@@ -291,6 +294,16 @@ public class KonquestFrame extends javax.swing.JFrame {
         indiceCuadrosClickeados++;
     }
 
+    public void limpiarFrame () {
+        Center.removeAll();
+        modelAreaMensajes.removeAllElements();
+        terminarTurnoButton.setEnabled(false);
+        calcularDistanciaButton.setEnabled(false);
+        consultaFlotaButton.setEnabled(false);
+        mandarNavesButton.setEnabled(false);
+        navesTextField.setEnabled(false);
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -303,7 +316,6 @@ public class KonquestFrame extends javax.swing.JFrame {
         North = new javax.swing.JPanel();
         menuAcciones = new javax.swing.JPanel();
         nuevoButton = new javax.swing.JButton();
-        terminarJuegoButton = new javax.swing.JButton();
         terminarTurnoButton = new javax.swing.JButton();
         calcularDistanciaButton = new javax.swing.JButton();
         consultaFlotaButton = new javax.swing.JButton();
@@ -323,6 +335,7 @@ public class KonquestFrame extends javax.swing.JFrame {
         setTitle("Konquest");
         setMaximumSize(new java.awt.Dimension(1100, 680));
         setMinimumSize(new java.awt.Dimension(1100, 680));
+        setResizable(false);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         North.setPreferredSize(new java.awt.Dimension(1100, 80));
@@ -340,10 +353,6 @@ public class KonquestFrame extends javax.swing.JFrame {
             }
         });
         menuAcciones.add(nuevoButton);
-
-        terminarJuegoButton.setText("Terminar Juego");
-        terminarJuegoButton.setEnabled(false);
-        menuAcciones.add(terminarJuegoButton);
 
         terminarTurnoButton.setText("Terminar turno");
         terminarTurnoButton.setEnabled(false);
@@ -429,6 +438,7 @@ public class KonquestFrame extends javax.swing.JFrame {
 
         getContentPane().add(Messages, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 480, -1, -1));
 
+        fondoLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/mapa/andromeda.jpg"))); // NOI18N
         fondoLabel.setOpaque(true);
         fondoLabel.setPreferredSize(new java.awt.Dimension(1100, 680));
         getContentPane().add(fondoLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
@@ -489,7 +499,6 @@ public class KonquestFrame extends javax.swing.JFrame {
     private javax.swing.JLabel navesMandarLabel;
     private javax.swing.JTextField navesTextField;
     private javax.swing.JButton nuevoButton;
-    private javax.swing.JButton terminarJuegoButton;
     private javax.swing.JButton terminarTurnoButton;
     // End of variables declaration//GEN-END:variables
 }
