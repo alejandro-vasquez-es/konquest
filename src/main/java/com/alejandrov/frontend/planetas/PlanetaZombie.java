@@ -1,8 +1,10 @@
 package com.alejandrov.frontend.planetas;
 
+import com.alejandrov.backend.Flota;
 import com.alejandrov.backend.Mapa;
 import com.alejandrov.backend.Posicion;
 import com.alejandrov.backend.listas.ListaException;
+import com.alejandrov.frontend.KonquestFrame;
 
 import javax.swing.*;
 import java.util.Objects;
@@ -16,7 +18,7 @@ public class PlanetaZombie extends Planeta{
     }
 
     @Override
-    public void recibirIncursión() {
+    public void recibirIncursion(Flota flota, Mapa mapa, KonquestFrame frame) throws ListaException {
 
     }
 }

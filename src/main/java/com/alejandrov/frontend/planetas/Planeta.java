@@ -1,11 +1,13 @@
 package com.alejandrov.frontend.planetas;
 
+import com.alejandrov.backend.Flota;
 import com.alejandrov.backend.Mapa;
 import com.alejandrov.backend.Posicion;
 import com.alejandrov.backend.listas.ListaException;
+import com.alejandrov.frontend.KonquestFrame;
+import com.alejandrov.frontend.componentes.Cuadro;
 
 import javax.swing.*;
-import java.awt.*;
 
 public abstract class Planeta {
 
@@ -15,7 +17,8 @@ public abstract class Planeta {
     protected double porcentajeMuerte;
     protected int produccion;
     protected ImageIcon imagen;
-
+    protected Cuadro cuadro;
+    protected boolean activo;
 
     public Planeta(String nombre, int cantidadNaves, Posicion posicion, double porcentajeMuerte, int produccion) {
         this.nombre = nombre;
@@ -23,6 +26,15 @@ public abstract class Planeta {
         this.posicion = posicion;
         this.porcentajeMuerte = porcentajeMuerte;
         this.produccion = produccion;
+        activo = true;
+    }
+
+    public void setCuadro(Cuadro cuadro) {
+        this.cuadro = cuadro;
+    }
+
+    public Cuadro getCuadro() {
+        return cuadro;
     }
 
     public Planeta(){
@@ -53,8 +65,6 @@ public abstract class Planeta {
         return imagen;
     }
 
-    public abstract void recibirIncursión();
-
     public static int crearCantidadDeNavesAleatoria() {
         return (int) Math.floor(Math.random() * (20 - 1 + 1) + 1);
     }
@@ -84,8 +94,18 @@ public abstract class Planeta {
         this.cantidadNaves -= navesEnviadas;
     }
 
-    public void regresarNaves(int navesRegresadas) {
+    public void agregarNaves(int navesRegresadas) {
         cantidadNaves += navesRegresadas;
     }
 
+    public void producirNaves(boolean esAcumulable){
+        if(esAcumulable) produccion ++;
+        cantidadNaves += produccion;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public abstract void recibirIncursion(Flota flota, Mapa mapa, KonquestFrame frame) throws ListaException;
 }

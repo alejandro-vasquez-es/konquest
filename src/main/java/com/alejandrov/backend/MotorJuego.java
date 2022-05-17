@@ -23,10 +23,6 @@ public class MotorJuego {
         this.mapa = mapa;
     }
 
-    public void terminarTurno() {
-
-    }
-
     public Jugador[] getJugadores() {
         return jugadores;
     }
@@ -64,25 +60,61 @@ public class MotorJuego {
     }
 
     public void nuevaFlota(Cuadro[] cuadrosClickeados, int naves) {
-        Lista<Flota> flotas = jugadorActivo.getFlotas();
-        int numero = flotas.obtenerLongitud()+1;
         Planeta origen = cuadrosClickeados[0].getPlaneta();
         Planeta destino = cuadrosClickeados[1].getPlaneta();
-        double porcentajeMuerte = origen.getPorcentajeMuerte();
-        int turnoLlegada = Mapa.medirDistancia(origen.getPosicion(), destino.getPosicion());
-        Flota nuevaFlota = new Flota(numero, naves, porcentajeMuerte,origen,destino, turnoLlegada, turno);
-        origen.enviarNaves(naves);
-        flotas.agregar(nuevaFlota);
+        jugadorActivo.agregarFlota(origen, destino, naves, turno);
+    }
+
+//    public void cargarFlotas() throws ListaException {
+//        for (int i = 0; i < jugadores.length; i++) {
+//            for (int j = 0; j < jugadores[i].getFlotas().obtenerLongitud(); j++) {
+//                Flota flota = jugadores[i].getFlotas().obtenerContenido(j);
+//                if (!flotas.incluye(flota)) {
+//                    flotas.agregar(flota);
+//                    flotasEnTurno.agregar(flota);
+//                }
+//            }
+//        }
+//    }
+
+    public void aterrizarNaves() throws ListaException {
+        for (int i = 0; i < jugadores.length; i++) {
+            jugadores[i].aterrizarFlotas(turno, mapa, frame);
+        }
     }
 
 
     public void setSiguienteJugadorActivo() {
         jugadorActivo = jugadores[indiceJugadorActivo];
         indiceJugadorActivo++;
-        if (indiceJugadorActivo > jugadores.length) {
+    }
+
+    public void terminarTurnoJugador() {
+        if (indiceJugadorActivo == jugadores.length)
+            avanzarTurnoPartida();
+        setSiguienteJugadorActivo();
+
+    }
+
+    public void producirPlanetas() {
+        Lista<Planeta> planetas = mapa.getPlanetas();
+        for (int i = 0; i < planetas.obtenerLongitud(); i++) {
+            try {
+                planetas.obtenerContenido(i).producirNaves(mapa.esAcumulativo());
+            } catch (ListaException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void avanzarTurnoPartida() {
+        try {
             indiceJugadorActivo = 0;
             turno++;
-            frame.actualizarAreaMensajes();
+            producirPlanetas();
+            aterrizarNaves();
+        } catch (ListaException e) {
+            e.printStackTrace();
         }
     }
 
@@ -97,4 +129,10 @@ public class MotorJuego {
     public KonquestFrame getFrame() {
         return frame;
     }
+
+    public int getIndiceJugadorActivo() {
+        return indiceJugadorActivo;
+    }
+
+
 }

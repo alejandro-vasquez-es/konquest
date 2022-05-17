@@ -66,14 +66,15 @@ public class Lista<T> implements Serializable {
 
         if (indice == 0) {
             inicio = inicio.getSiguiente();
+        longitud--;
         } else if (indice == longitud - 1) {
             eliminarUltimo();
         } else {
             Nodo<T> anterior = buscarIndice(indice - 1);
             Nodo<T> siguiente = anterior.getSiguiente().getSiguiente();
             anterior.setSiguiente(siguiente);
-        }
         longitud--;
+        }
 
     }
 
@@ -89,6 +90,15 @@ public class Lista<T> implements Serializable {
             ultimo = nuevoUltimo;
         }
         longitud--;
+    }
+
+    public void cambiarContenido(int indice,T contenido) throws ListaException {
+        buscarIndice(indice).setContenido(contenido);
+    }
+
+    public void cambiarContenido(T contenidoARemplazar,T contenido) throws ListaException {
+       int indice = obtenerIndice(contenidoARemplazar);
+       cambiarContenido(indice, contenido);
     }
 
     public T obtenerContenido(int indice) throws ListaException {

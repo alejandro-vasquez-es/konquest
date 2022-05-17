@@ -27,7 +27,7 @@ public class KonquestFrame extends javax.swing.JFrame {
     private Cuadro[] cuadrosClickeados;
     private int indiceCuadrosClickeados;
     private MotorJuego juego;
-    private DefaultListModel<String> model;
+    private DefaultListModel<String> modelAreaMensajes;
 
     public KonquestFrame() {
 
@@ -76,10 +76,6 @@ public class KonquestFrame extends javax.swing.JFrame {
         Center.add(cuadricula);
     }
 
-    public void setinstruccionLabel() {
-        instruccionLabel.setText("  Turno del jugador \"" + juego.getJugadorActivo().getNombre() + "\", seleccione el planeta de origen");
-    }
-
     public void deseleccionarCuadros() {
         for (int i = 0; i < 2; i++) {
             if (cuadrosClickeados[i] != null) {
@@ -90,14 +86,21 @@ public class KonquestFrame extends javax.swing.JFrame {
         }
     }
 
-    public void terminarTurnoJugador() {
-        juego.setSiguienteJugadorActivo();
+    public void agregarFlotaAterrizada(String mensaje) {
+        modelAreaMensajes.addElement(mensaje);
+        JOptionPane.showMessageDialog(this, mensaje);
+    }
+
+    public void terminarTurnoJugador() throws ListaException {
+        if (juego.getIndiceJugadorActivo() == 2)
+            actualizarAreaMensajes();
+        juego.terminarTurnoJugador();
+        deseleccionarCuadros();
         setinstruccionLabel();
-        try {
-            setToolTips();
-        } catch (ListaException e) {
-            e.printStackTrace();
-        }
+        setToolTips();
+        JOptionPane.showMessageDialog(this, "Turno del jugador " + juego.getJugadorActivo().getNombre());
+        cuadricula.revalidate();
+        cuadricula.repaint();
     }
 
     public void prepararFrame(final MotorJuego juego) throws ListaException {
@@ -118,28 +121,32 @@ public class KonquestFrame extends javax.swing.JFrame {
         Center.add(deseleccionarButton);
         setToolTips();
         iniciarAreaMensajes();
+        setinstruccionLabel();
         terminarJuegoButton.setEnabled(true);
         terminarTurnoButton.setEnabled(true);
         calcularDistanciaButton.setEnabled(true);
         consultaFlotaButton.setEnabled(true);
         mandarNavesButton.setEnabled(true);
         navesTextField.setEnabled(true);
-        setinstruccionLabel();
+        deseleccionarCuadros();
     }
 
     public void iniciarAreaMensajes() {
-        model = new DefaultListModel<String>();
-        areaMensajes.setModel(model);
-        actualizarAreaMensajes();
+        modelAreaMensajes = new DefaultListModel<String>();
+        areaMensajes.setModel(modelAreaMensajes);
     }
 
     public void actualizarAreaMensajes() {
-        model.addElement("Turno" + juego.getTurno());
         String guiones = "";
-        for (int i = 0; i < 270; i++) {
+        for (int i = 0; i < 260; i++) {
             guiones += "-";
         }
-        model.addElement(guiones);
+        modelAreaMensajes.addElement(guiones);
+        modelAreaMensajes.addElement("Turno " + (juego.getTurno() + 1));
+    }
+
+    public void setinstruccionLabel() {
+        instruccionLabel.setText("  Turno del jugador \"" + juego.getJugadorActivo().getNombre() + "\", seleccione el planeta de origen");
     }
 
     public void setToolTips() throws ListaException {
@@ -179,8 +186,6 @@ public class KonquestFrame extends javax.swing.JFrame {
         }
     }
 
-    ;
-
     public void setToolTipsPlanetasJugador() throws ListaException {
         Lista<PlanetaJugador> planetas = juego.getMapa().getPlanetasJugador();
         for (int i = 0; i < planetas.obtenerLongitud(); i++) {
@@ -198,7 +203,7 @@ public class KonquestFrame extends javax.swing.JFrame {
     public void calcularDistancia() {
         if (hayCuadrosSeleccionados()) {
             int distancia = Mapa.medirDistancia(cuadrosClickeados[0].getPlaneta().getPosicion(), cuadrosClickeados[1].getPlaneta().getPosicion());
-            JOptionPane.showMessageDialog(this, "La distancia entre ambos planetas es de: " + distancia + " años luz", "Distancia entre planetas", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "La distancia entre ambos planetas es de " + distancia + " años luz", "Distancia entre planetas", JOptionPane.INFORMATION_MESSAGE);
 
         } else {
             JOptionPane.showMessageDialog(this, "Por favor selecciona dos planetas para realizar la medición", "Selección de planetas", JOptionPane.WARNING_MESSAGE);
@@ -212,7 +217,7 @@ public class KonquestFrame extends javax.swing.JFrame {
     }
 
     public void consultarFlota() {
-        FlotasFrame flotasFrame = new FlotasFrame(juego.getJugadorActivo().getFlotas(),juego.getTurno(),juego.getJugadorActivo(),this);
+        FlotasFrame flotasFrame = new FlotasFrame(juego.getJugadorActivo().getFlotas(), juego.getTurno(), juego.getJugadorActivo(), this);
         flotasFrame.setLocationRelativeTo(this);
         flotasFrame.setVisible(true);
     }
@@ -235,18 +240,20 @@ public class KonquestFrame extends javax.swing.JFrame {
 
         //no hay naves escritas
         if (navesTextField.getText().equals("")) {
+            deseleccionarCuadros();
+            navesTextField.setText("");
             throw new ValidacionesException("Por favor escribe cuántas naves quieres mandar", this);
         }
 
         //el planeta no tiene naves suficientes
         if (Integer.parseInt(navesTextField.getText()) > cuadrosClickeados[0].getPlaneta().getCantidadNaves()) {
+            deseleccionarCuadros();
             navesTextField.setText("");
-            navesTextField.requestFocus();
             throw new ValidacionesException("El planeta seleccionado no tiene las naves suficientes", this);
         }
 
         // no se pueden conquistar planetas zombies
-        if(cuadrosClickeados[1].getPlaneta() instanceof PlanetaZombie){
+        if (cuadrosClickeados[1].getPlaneta() instanceof PlanetaZombie) {
             deseleccionarCuadros();
             navesTextField.setText("");
             throw new ValidacionesException("No se pueden conquistar planetas zombies", this);
@@ -316,7 +323,6 @@ public class KonquestFrame extends javax.swing.JFrame {
         setTitle("Konquest");
         setMaximumSize(new java.awt.Dimension(1100, 680));
         setMinimumSize(new java.awt.Dimension(1100, 680));
-        setResizable(false);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         North.setPreferredSize(new java.awt.Dimension(1100, 80));
@@ -458,7 +464,11 @@ public class KonquestFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_consultaFlotaButtonActionPerformed
 
     private void terminarTurnoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_terminarTurnoButtonActionPerformed
-        terminarTurnoJugador();
+        try {
+            terminarTurnoJugador();
+        } catch (ListaException e) {
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_terminarTurnoButtonActionPerformed
 
 

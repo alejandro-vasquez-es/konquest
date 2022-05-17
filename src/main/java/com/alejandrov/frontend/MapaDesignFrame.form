@@ -425,6 +425,7 @@
             </Component>
             <Component class="javax.swing.JCheckBox" name="produccionAcumuladaCheckbox">
               <Properties>
+                <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Producci&#xf3;n acumulativa"/>
               </Properties>
             </Component>
@@ -443,11 +444,13 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="mostrarNavesCheckbox">
                   <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Mostrar naves"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="mostrarEstad&#xed;sticasCheckbox">
                   <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Mostrar estad&#xed;sticas"/>
                   </Properties>
                 </Component>

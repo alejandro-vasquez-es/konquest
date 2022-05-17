@@ -511,15 +511,18 @@ public class MapaDesignFrame extends javax.swing.JFrame {
         mapaCiegoCheckbox.setText("Mapa ciego");
         Opciones.add(mapaCiegoCheckbox);
 
+        produccionAcumuladaCheckbox.setSelected(true);
         produccionAcumuladaCheckbox.setText("Producción acumulativa");
         Opciones.add(produccionAcumuladaCheckbox);
 
         neutrales.setBorder(javax.swing.BorderFactory.createTitledBorder("Neutrales"));
         neutrales.setLayout(new javax.swing.BoxLayout(neutrales, javax.swing.BoxLayout.Y_AXIS));
 
+        mostrarNavesCheckbox.setSelected(true);
         mostrarNavesCheckbox.setText("Mostrar naves");
         neutrales.add(mostrarNavesCheckbox);
 
+        mostrarEstadísticasCheckbox.setSelected(true);
         mostrarEstadísticasCheckbox.setText("Mostrar estadísticas");
         neutrales.add(mostrarEstadísticasCheckbox);
 

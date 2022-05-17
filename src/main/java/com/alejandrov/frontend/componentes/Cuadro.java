@@ -16,6 +16,9 @@ public class Cuadro extends JPanel implements Cloneable {
     private Planeta planeta;
     private boolean clicked;
     private MotorJuego juego;
+    private JLabel bg;
+    private JLabel nombre;
+    private int ladoCuadro;
 
     public final static Border LINEA_NEGRA = BorderFactory.createLineBorder(new Color(40, 40, 40, 255), 1);
     public final static Border LINEA_ROJA = BorderFactory.createLineBorder(new Color(194, 31, 47, 255), 2);
@@ -41,9 +44,9 @@ public class Cuadro extends JPanel implements Cloneable {
                             frame.getCuadrosClickeados()[1] = Cuadro.this;
                             frame.aumentarIndiceCuadrosClickeados();
                         }
-                    } else if(frame.getIndiceCuadrosClickeados() == 0){
+                    } else if (frame.getIndiceCuadrosClickeados() == 0) {
                         JOptionPane.showMessageDialog(frame, "El planeta que has seleccionado no pertenece a " + juego.getJugadorActivo().getNombre(), "Error al seleccionar el planeta", JOptionPane.WARNING_MESSAGE);
-                    }else if(frame.getIndiceCuadrosClickeados() == 1){
+                    } else if (frame.getIndiceCuadrosClickeados() == 1) {
                         seleccionar();
                         frame.getCuadrosClickeados()[1] = Cuadro.this;
                         frame.aumentarIndiceCuadrosClickeados();
@@ -53,6 +56,11 @@ public class Cuadro extends JPanel implements Cloneable {
             }
 
         });
+    }
+
+    public void actualizar() {
+        removeAll();
+        setIcon();
     }
 
     public void seleccionar() {
@@ -77,27 +85,30 @@ public class Cuadro extends JPanel implements Cloneable {
 
     public void setPlaneta(Planeta planeta) {
         this.planeta = planeta;
+        if (planeta != null) {
+            planeta.setCuadro(this);
+        }
     }
 
     public void setIcon() {
-        int ladoCuadro = getPreferredSize().width;
+        ladoCuadro = getPreferredSize().width;
         int padding = (int) Math.floor(ladoCuadro * 0.08);
         ladoCuadro -= padding * 2;
         ladoCuadro -= 2; //border
 
-        JLabel nombre = new JLabel(planeta.getNombre());
+        nombre = new JLabel(planeta.getNombre());
         add(nombre);
-        nombre.setBounds(3,0,getPreferredSize().width,18);
+        nombre.setBounds(3, 0, getPreferredSize().width, 18);
 
-        JLabel bg = new JLabel();
+        bg = new JLabel();
         add(bg);
-        bg.setBounds(padding,padding,ladoCuadro,ladoCuadro);
+        bg.setBounds(padding, padding, ladoCuadro, ladoCuadro);
 
-        escalarImagen(ladoCuadro, bg);
+        escalarImagen();
 
     }
 
-    public void escalarImagen(int ladoCuadro, JLabel bg) {
+    public void escalarImagen() {
         Image img = planeta.getImagen().getImage();
         Image imgScale = img.getScaledInstance(ladoCuadro, ladoCuadro, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(imgScale);

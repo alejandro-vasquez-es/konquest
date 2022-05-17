@@ -13,7 +13,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 /**
- *
  * @author aleja
  */
 public class FlotasFrame extends javax.swing.JFrame {
@@ -44,8 +43,8 @@ public class FlotasFrame extends javax.swing.JFrame {
     public void cancelarFlotas() throws ListaException {
         int filas = model.getRowCount();
         for (int i = 0; i < filas; i++) {
-            if(model.getValueAt(i,0).getClass().equals(Boolean.class) && model.getValueAt(i, 0).equals(false)) {
-                flotas.obtenerContenido(i).cancelarFlota(flotas);
+            if (model.getValueAt(i, 0).getClass().equals(Boolean.class) && model.getValueAt(i, 0).equals(false)) {
+                jugadorActivo.cancelarFlota(flotas.obtenerContenido(i));
             }
         }
         parent.setToolTips();
@@ -56,7 +55,15 @@ public class FlotasFrame extends javax.swing.JFrame {
         model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return (column == 0);
+                try {
+                    boolean sonTurnosIguales = turno == flotas.obtenerContenido(row).getTurnoPartida();
+                    return (column == 0
+                            &&
+                            sonTurnosIguales);
+                } catch (ListaException e) {
+                    e.printStackTrace();
+                }
+                return false;
             }
         };
 
@@ -68,10 +75,10 @@ public class FlotasFrame extends javax.swing.JFrame {
         model.addColumn("porcentaje de muertes");
         model.addColumn("Turno de llegada");
 
-        tablaFlotas = new JTable(){
+        tablaFlotas = new JTable() {
             @Override
             public Class<?> getColumnClass(int column) {
-                if (column == 0) return Boolean.class;
+                    if (column == 0) return Boolean.class;
                 return super.getColumnClass(column);
             }
         };
